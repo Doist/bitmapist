@@ -44,16 +44,18 @@ now = datetime.utcnow()
 last_month = datetime.utcnow() - timedelta(days=30)
 ```
 
-Mark user 123 as active:
+Mark user 123 as active and has played a song:
 
 ```python
 mark_event('active', 123)
+mark_event('song:played', 123)
 ```
 
 Answer if user 123 has been active this month:
 
 ```python
 assert 123 in MonthEvents('active', now.year, now.month)
+assert 123 in MonthEvents('song:played', now.year, now.month)
 ```
 
 How many users have been active this week?:
