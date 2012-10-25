@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '1.2',
+      version = '1.3',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -79,14 +79,18 @@ How many users have been active this week?::
 
     print len(WeekEvents('active', now.year, now.isocalendar()[1]))
 
-Perform bit operations. Which users that have been active last month are still active this month?::
+Perform bit operations. How many users that have been active last month are still active this month?::
 
     active_2_months = BitOpAnd(
         MonthEvents('active', last_month.year, last_month.month),
         MonthEvents('active', now.year, now.month)
     )
+    print len(active_2_months)
 
-Nest bit operations!::
+    # Is 123 active for 2 months?
+    assert 123 in active_2_months
+
+Work with nested bit operations (imagine what you can do with this ;-))::
 
     active_2_months = BitOpAnd(
         BitOpAnd(
@@ -95,6 +99,8 @@ Nest bit operations!::
         ),
         MonthEvents('active', now.year, now.month)
     )
+    print len(active_2_months)
+    assert 123 in active_2_months
 
 Copyright: 2012 by Doist Ltd.
 

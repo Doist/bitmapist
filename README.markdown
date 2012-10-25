@@ -16,6 +16,7 @@ Using Redis bitmaps you can store events for millions of users in a very little 
 You should be careful about using huge ids (e.g. 2^32 or bigger) as this could require larger amounts of memory.
 
 If you want to read more about bitmaps please read following:
+
 * http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
 * http://redis.io/commands/setbit
 * http://en.wikipedia.org/wiki/Bit_array
@@ -61,16 +62,20 @@ How many users have been active this week?:
 print len(WeekEvents('active', now.year, now.isocalendar()[1]))
 ```
 
-Perform bit operations. Which users that have been active last month are still active this month?::
+Perform bit operations. How many users that have been active last month are still active this month?
 
 ```python
 active_2_months = BitOpAnd(
     MonthEvents('active', last_month.year, last_month.month),
     MonthEvents('active', now.year, now.month)
 )
+print len(active_2_months)
+
+# Is 123 active for 2 months?
+assert 123 in active_2_months
 ```
 
-Nest bit operations (and create powerful analytics)!
+Work with nested bit operations (imagine what you can do with this ;-))!
 
 ```python
 active_2_months = BitOpAnd(
@@ -80,6 +85,8 @@ active_2_months = BitOpAnd(
     ),
     MonthEvents('active', now.year, now.month)
 )
+print len(active_2_months)
+assert 123 in active_2_months
 ```
 
 Copyright: 2012 by Doist Ltd.
