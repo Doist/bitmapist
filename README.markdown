@@ -21,6 +21,7 @@ If you want to read more about bitmaps please read following:
 * http://redis.io/commands/setbit
 * http://en.wikipedia.org/wiki/Bit_array
 * http://www.slideshare.net/crashlytics/crashlytics-on-redis-analytics
+* http://amix.dk/blog/post/19714 [my blog post]
 
 Requires Redis 2.6+ and newest version of redis-py.
 
@@ -38,7 +39,9 @@ Setting things up:
 
 ```python
 from datetime import datetime, timedelta
-from bitmapist import mark_event, MonthEvents
+from bitmapist import setup_redis, delete_all_events, mark_event,\
+                      MonthEvents, WeekEvents, DayEvents, HourEvents,\
+                      BitOpAnd, BitOpOr
 
 now = datetime.utcnow()
 last_month = datetime.utcnow() - timedelta(days=30)
