@@ -1,4 +1,4 @@
-bitmapist: a powerful analytics library for Redis (bitmaps based)
+bitmapist: a powerful analytics library for Redis
 =================================================================
 
 This Python library makes it possible to implement real-time, highly scalable analytics that can answer following questions:
@@ -35,52 +35,52 @@ Examples
 
 Setting things up:
 
-    ```python
-    from datetime import datetime, timedelta
-    from bitmapist import mark_event, MonthEvents
+```python
+from datetime import datetime, timedelta
+from bitmapist import mark_event, MonthEvents
 
-    now = datetime.utcnow()
-    last_month = datetime.utcnow() - timedelta(days=30)
-    ```
+now = datetime.utcnow()
+last_month = datetime.utcnow() - timedelta(days=30)
+```
 
 Mark user 123 as active:
 
-    ```python
-    mark_event('active', 123)
-    ```
+```python
+mark_event('active', 123)
+```
 
 Answer if user 123 has been active this month:
 
-    ```python
-    assert 123 in MonthEvents('active', now.year, now.month)
-    ```
+```python
+assert 123 in MonthEvents('active', now.year, now.month)
+```
 
 How many users have been active this week?:
 
-    ```python
-    print len(WeekEvents('active', now.year, now.isocalendar()[1]))
-    ```
+```python
+print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+```
 
 Perform bit operations. Which users that have been active last month are still active this month?::
 
-    ```python
-    active_2_months = BitOpAnd(
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month)
-    )
-    ```
+```python
+active_2_months = BitOpAnd(
+    MonthEvents('active', last_month.year, last_month.month),
+    MonthEvents('active', now.year, now.month)
+)
+```
 
 Nest bit operations (and create powerful analytics)!
 
-    ```python
-    active_2_months = BitOpAnd(
-        BitOpAnd(
-            MonthEvents('active', last_month.year, last_month.month),
-            MonthEvents('active', now.year, now.month)
-        ),
+```python
+active_2_months = BitOpAnd(
+    BitOpAnd(
+        MonthEvents('active', last_month.year, last_month.month),
         MonthEvents('active', now.year, now.month)
-    )
-    ```
+    ),
+    MonthEvents('active', now.year, now.month)
+)
+```
 
 Copyright: 2012 by Doist Ltd.
 Developer: Amir Salihefendic ( http://amix.dk )
