@@ -147,7 +147,9 @@ def delete_all_events(system='default'):
     Delete all events from the database.
     """
     cli = get_redis(system)
-    cli.delete(*cli.keys('trackist_*'))
+    keys = cli.keys('trackist_*')
+    if len(keys) > 0:
+        cli.delete(*keys)
 
 
 def delete_temporary_bitop_keys(system='default'):
@@ -155,7 +157,9 @@ def delete_temporary_bitop_keys(system='default'):
     Delete all temporary keys that are used when using bit operations.
     """
     cli = get_redis(system)
-    cli.delete(*cli.keys('trackist_bitop_*'))
+    keys = cli.keys('trackist_bitop_*')
+    if len(keys) > 0:
+        cli.delete(*keys)
 
 
 #--- Events ----------------------------------------------
