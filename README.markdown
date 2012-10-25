@@ -83,5 +83,7 @@ active_2_months = BitOpAnd(
 ```
 
 Copyright: 2012 by Doist Ltd.
+
 Developer: Amir Salihefendic ( http://amix.dk )
+
 License: BSD

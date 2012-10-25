@@ -10,10 +10,11 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '1.0',
+      version = '1.1',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
+      install_requires = ['redis>=2.7.1'],
       classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -47,6 +48,7 @@ Using Redis bitmaps you can store events for millions of users in a very little 
 You should be careful about using huge ids (e.g. 2^32 or bigger) as this could require larger amounts of memory.
 
 If you want to read more about bitmaps please read following:
+
 * http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
 * http://redis.io/commands/setbit
 * http://en.wikipedia.org/wiki/Bit_array
@@ -95,5 +97,7 @@ Nest bit operations!::
     )
 
 Copyright: 2012 by Doist Ltd.
+
 Developer: Amir Salihefendic ( http://amix.dk )
+
 License: BSD""")
