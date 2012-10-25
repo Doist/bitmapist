@@ -26,42 +26,53 @@ Requires Redis 2.6+ and newest version of redis-py.
 Installation
 ============
 
-Can be installed very easily via::
+Can be installed very easily via:
 
     $ sudo pip install bitmapist
 
 Examples
 ========
 
-Setting things up::
+Setting things up:
 
+    ```python
     from datetime import datetime, timedelta
     from bitmapist import mark_event, MonthEvents
 
     now = datetime.utcnow()
     last_month = datetime.utcnow() - timedelta(days=30)
+    ```
 
-Mark user 123 as active::
+Mark user 123 as active:
 
+    ```python
     mark_event('active', 123)
+    ```
 
-Answer if user 123 has been active this month::
+Answer if user 123 has been active this month:
 
+    ```python
     assert 123 in MonthEvents('active', now.year, now.month)
+    ```
 
-How many users have been active this week?::
+How many users have been active this week?:
 
+    ```python
     print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+    ```
 
 Perform bit operations. Which users that have been active last month are still active this month?::
 
+    ```python
     active_2_months = BitOpAnd(
         MonthEvents('active', last_month.year, last_month.month),
         MonthEvents('active', now.year, now.month)
     )
+    ```
 
-Nest bit operations!::
+Nest bit operations (and create powerful analytics)!
 
+    ```python
     active_2_months = BitOpAnd(
         BitOpAnd(
             MonthEvents('active', last_month.year, last_month.month),
@@ -69,6 +80,7 @@ Nest bit operations!::
         ),
         MonthEvents('active', now.year, now.month)
     )
+    ```
 
 Copyright: 2012 by Doist Ltd.
 Developer: Amir Salihefendic ( http://amix.dk )
