@@ -10,20 +10,20 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '1.4',
+      version = '1.5',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
       install_requires = ['redis>=2.7.1'],
       classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
       ],
-      packages=['bitmapist', 'test'],
+      packages=['bitmapist'],
       platforms=["Any"],
       license="BSD",
       keywords='redis bitmap analytics bitmaps realtime',
