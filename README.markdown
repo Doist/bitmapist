@@ -25,12 +25,20 @@ If you want to read more about bitmaps please read following:
 
 Requires Redis 2.6+ and newest version of redis-py.
 
+
 Installation
 ============
 
 Can be installed very easily via:
 
     $ sudo pip install bitmapist
+
+
+Ports
+=====
+
+* PHP port: https://github.com/jeremyFreeAgent/Bitter
+
 
 Examples
 ========
