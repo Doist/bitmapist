@@ -163,6 +163,17 @@ def delete_temporary_bitop_keys(system='default'):
 
 
 #--- Events ----------------------------------------------
+class MixinEventsMarked:
+    """
+    Extends with an obj.has_events_marked()
+    that returns `True` if there are any events marked,
+    otherwise `False` is returned.
+    """
+    def has_events_marked(self):
+        cli = get_redis(self.system)
+        return cli.get(self.redis_key) != None
+
+
 class MixinCounts:
     """
     Extends with an obj.get_count() that uses BITCOUNT to
@@ -193,7 +204,7 @@ class MixinContains:
             return False
 
 
-class MonthEvents(MixinCounts, MixinContains):
+class MonthEvents(MixinCounts, MixinContains, MixinEventsMarked):
     """
     Events for a month.
 
@@ -207,7 +218,7 @@ class MonthEvents(MixinCounts, MixinContains):
                                      '%s-%s' % (year, month))
 
 
-class WeekEvents(MixinCounts, MixinContains):
+class WeekEvents(MixinCounts, MixinContains, MixinEventsMarked):
     """
     Events for a week.
 
@@ -220,7 +231,7 @@ class WeekEvents(MixinCounts, MixinContains):
         self.redis_key = _prefix_key(event_name, 'W%s-%s' % (year, week))
 
 
-class DayEvents(MixinCounts, MixinContains):
+class DayEvents(MixinCounts, MixinContains, MixinEventsMarked):
     """
     Events for a day.
 
@@ -234,7 +245,7 @@ class DayEvents(MixinCounts, MixinContains):
                                      '%s-%s-%s' % (year, month, day))
 
 
-class HourEvents(MixinCounts, MixinContains):
+class HourEvents(MixinCounts, MixinContains, MixinEventsMarked):
     """
     Events for a hour.
 

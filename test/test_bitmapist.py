@@ -133,3 +133,17 @@ def test_bit_operations():
 
     assert 123 in active_2_months
     assert 224 not in active_2_months
+
+
+def test_events_marked():
+    delete_all_events()
+
+    now = datetime.utcnow()
+
+    assert MonthEvents('active', now.year, now.month).get_count() == 0
+    assert MonthEvents('active', now.year, now.month).has_events_marked() == False
+
+    mark_event('active', 123, now=now)
+
+    assert MonthEvents('active', now.year, now.month).get_count() == 1
+    assert MonthEvents('active', now.year, now.month).has_events_marked() == True

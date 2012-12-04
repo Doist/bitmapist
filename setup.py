@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '1.5',
+      version = '1.6',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -79,6 +79,7 @@ Answer if user 123 has been active this month::
 
     assert 123 in MonthEvents('active', now.year, now.month)
     assert 123 in MonthEvents('song:played', now.year, now.month)
+    assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 
 How many users have been active this week?::
 

@@ -67,6 +67,7 @@ Answer if user 123 has been active this month:
 ```python
 assert 123 in MonthEvents('active', now.year, now.month)
 assert 123 in MonthEvents('song:played', now.year, now.month)
+assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 ```
 
 How many users have been active this week?:
