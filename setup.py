@@ -10,11 +10,11 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '2.0',
+      version = '2.1',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
-      install_requires = ['redis>=2.7.1'],
+      install_requires = ['redis>=2.7.1', 'mako'],
       classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
