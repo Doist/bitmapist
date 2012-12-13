@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '1.6',
+      version = '2.0',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -46,6 +46,10 @@ This library is very easy to use and enables you to create your own reports easi
 
 Using Redis bitmaps you can store events for millions of users in a very little amount of memory (megabytes).
 You should be careful about using huge ids (e.g. 2^32 or bigger) as this could require larger amounts of memory.
+
+Now with Cohort charts! Read more here:
+
+* Releasing bitmapist.cohort - or how we saved over $2000/month: http://amix.dk/blog/post/19718
 
 If you want to read more about bitmaps please read following:
 
