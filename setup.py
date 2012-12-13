@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '2.1',
+      version = '2.21',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -23,10 +23,12 @@ setup(name='bitmapist',
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
       ],
-      packages=['bitmapist'],
+      packages=['bitmapist', 'bitmapist.cohort'],
+      include_package_data=True,
+      zip_safe=False,
       platforms=["Any"],
       license="BSD",
-      keywords='redis bitmap analytics bitmaps realtime',
+      keywords='redis bitmap analytics bitmaps realtime cohort',
       description="Implements a powerful analytics library using Redis bitmaps.",
       long_description="""\
 bitmapist
