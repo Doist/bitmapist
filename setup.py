@@ -14,7 +14,7 @@ setup(name='bitmapist',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
-      install_requires = ['redis>=2.7.1', 'mako'],
+      install_requires = ['redis>=2.7.1', 'mako', 'python-dateutil'],
       classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
