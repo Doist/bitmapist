@@ -142,6 +142,26 @@ def mark_event(event_name, uuid, system='default', now=None):
         p.execute()
 
 
+def mark_attribute(attribute_name, uuid, system='default'):
+    """
+    Marks an attribute that is not time specific.
+
+    :param :attribute_name The name of the attribute, e.g. "paid_user" or "new_email_split_test_group"
+    :param :uuid An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
+    :param :system The Redis system to use
+
+    Examples::
+
+        # Mark id 1 as a paid user
+        mark_attribute('paid_user', 1)
+    """
+
+    obj = Attributes(attribute_name)
+
+    with get_redis(system).pipeline() as p:
+        p.setbit(obj.redis_key, uuid, 1)
+
+
 def delete_all_events(system='default'):
     """
     Delete all events from the database.
@@ -260,6 +280,19 @@ class HourEvents(MixinCounts, MixinContains, MixinEventsMarked):
                                          (year, month, day, hour))
 
 
+class Attributes(MixinCounts, MixinContains, MixinEventsMarked):
+    """
+    Attributes that are not time specific.
+
+    Example::
+
+        Attributes('paid_user')
+    """
+    def __init__(self, attribute_name, system='default'):
+        self.system = system
+        self.redis_key = attribute_name
+
+
 #--- Bit operations ----------------------------------------------
 class BitOperation:
 
@@ -277,6 +310,15 @@ class BitOperation:
             MonthEvents('active', last_month.year, last_month.month),
             MonthEvents('active', now.year, now.month)
         )
+
+    Example 2. Paid users that are active::
+
+        active_2_months = BitOpAnd(
+            MonthEvents('active', now.year, now.month),
+            Attributes('paid_user')
+        )
+
+    Nested operations:
 
         active_2_months = BitOpAnd(
             BitOpAnd(
