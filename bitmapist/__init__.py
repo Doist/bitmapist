@@ -81,6 +81,9 @@ SYSTEMS = {
     'default': redis.Redis(host='localhost', port=6379)
 }
 
+KEY_PREFIX = 'trackist'
+
+
 def setup_redis(name, host, port, **kw):
     """
     Setup a redis system.
@@ -105,6 +108,13 @@ def get_redis(system='default'):
     :param :system The name of the system, extra systems can be setup via `setup_redis`
     """
     return SYSTEMS[system]
+
+
+def set_key_prefix(prefix):
+    """
+    Set the prefix for all bitmap keys
+    """
+    KEY_PREFIX = prefix
 
 
 #--- Events marking and deleting ----------------------------------------------
@@ -157,9 +167,7 @@ def mark_attribute(attribute_name, uuid, system='default'):
     """
 
     obj = Attributes(attribute_name)
-
-    with get_redis(system).pipeline() as p:
-        p.setbit(obj.redis_key, uuid, 1)
+    get_redis(system).setbit(obj.redis_key, uuid, 1)
 
 
 def delete_all_events(system='default'):
@@ -167,7 +175,7 @@ def delete_all_events(system='default'):
     Delete all events from the database.
     """
     cli = get_redis(system)
-    keys = cli.keys('trackist_*')
+    keys = cli.keys('%s_*' % KEY_PREFIX)
     if len(keys) > 0:
         cli.delete(*keys)
 
@@ -177,7 +185,7 @@ def delete_temporary_bitop_keys(system='default'):
     Delete all temporary keys that are used when using bit operations.
     """
     cli = get_redis(system)
-    keys = cli.keys('trackist_bitop_*')
+    keys = cli.keys('%s_bitop_*' % KEY_PREFIX)
     if len(keys) > 0:
         cli.delete(*keys)
 
@@ -290,7 +298,7 @@ class Attributes(MixinCounts, MixinContains, MixinEventsMarked):
     """
     def __init__(self, attribute_name, system='default'):
         self.system = system
-        self.redis_key = attribute_name
+        self.redis_key = _prefix_key(attribute_name)
 
 
 #--- Bit operations ----------------------------------------------
@@ -299,7 +307,7 @@ class BitOperation:
     """
     Base class for bit operations (AND, OR, XOR).
 
-    Please note that each bit operation creates a new key prefixed with `trackist_bitop_`.
+    Please note that each bit operation creates a new key prefixed with `{KEY_PREFIX}_bitop_`.
     These temporary keys can be deleted with `delete_temporary_bitop_keys`.
 
     You can even nest bit operations.
@@ -341,7 +349,7 @@ class BitOperation:
 
         event_redis_keys = [ev.redis_key for ev in events]
 
-        self.redis_key = 'trackist_bitop_%s_%s' % (op_name,
+        self.redis_key = '%s_bitop_%s_%s' % (KEY_PREFIX, op_name,
                                                    '-'.join(event_redis_keys))
 
         cli = get_redis(system)
@@ -365,5 +373,8 @@ class BitOpXor(BitOperation, MixinContains, MixinCounts):
 
 
 #--- Private ----------------------------------------------
-def _prefix_key(event_name, date):
-    return 'trackist_%s_%s' % (event_name, date)
+def _prefix_key(event_name, date=None):
+    if date:
+        return '%s_%s_%s' % (KEY_PREFIX, event_name, date)
+    else:
+        return '%s_%s' % (KEY_PREFIX, event_name)
