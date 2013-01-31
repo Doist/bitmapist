@@ -173,7 +173,7 @@ def get_dates_data(select1, select2,
                 result.append('')
                 continue
 
-            day_set_op = BitOpAnd( day_events, delta_events )
+            day_set_op = BitOpAnd(system, day_events, delta_events)
 
             delta_count = len(day_set_op)
             if delta_count == 0:
