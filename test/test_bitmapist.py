@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from bitmapist import setup_redis, delete_all_events, mark_event,\
                       MonthEvents, WeekEvents, DayEvents, HourEvents,\
-                      BitOpAnd, BitOpOr
+                      BitOpAnd, BitOpOr, Attributes, mark_attribute
 
 
 def setup_module():
@@ -33,7 +33,7 @@ def test_mark_with_diff_days():
     # Hour
     assert 123 in HourEvents('active', now.year, now.month, now.day, now.hour)
     assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour)
-    assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour-1)
+    assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour - 1)
 
 
 def test_mark_counts():
@@ -47,6 +47,17 @@ def test_mark_counts():
     mark_event('active', 23232)
 
     assert len(MonthEvents('active', now.year, now.month)) == 2
+
+
+def test_mark_attribute_counts():
+    delete_all_events()
+
+    assert Attributes('active').get_count() == 0
+
+    mark_attribute('active', 123)
+    mark_attribute('active', 23232)
+
+    assert len(Attributes('active')) == 2
 
 
 def test_different_dates():
@@ -147,3 +158,14 @@ def test_events_marked():
 
     assert MonthEvents('active', now.year, now.month).get_count() == 1
     assert MonthEvents('active', now.year, now.month).has_events_marked() == True
+
+
+def test_attributes_marked():
+    delete_all_events()
+
+    assert Attributes('paid_user').get_count() == 0
+
+    mark_attribute('paid_user', 123)
+
+    assert Attributes('paid_user').get_count() == 1
+    assert 123 in Attributes('paid_user')
