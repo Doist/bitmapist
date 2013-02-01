@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '2.21',
+      version = '2.22',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
