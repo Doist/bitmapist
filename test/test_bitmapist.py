@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 
 from bitmapist import setup_redis, delete_all_events, mark_event,\
                       MonthEvents, WeekEvents, DayEvents, HourEvents,\
-                      BitOpAnd, BitOpOr, Attributes, mark_attribute
+                      BitOpAnd, BitOpOr, Attributes, mark_attribute,\
+                      get_all_event_names, get_all_attribute_names,\
+                      set_divider, set_key_prefix, get_redis
 
 
 def setup_module():
@@ -169,3 +171,43 @@ def test_attributes_marked():
 
     assert Attributes('paid_user').get_count() == 1
     assert 123 in Attributes('paid_user')
+
+
+def test_set_divider():
+    delete_all_events()
+    client = get_redis('default')
+    set_divider(':')
+    mark_attribute('paid_user', 123)
+    assert 'trackist:at:paid_user' in \
+        client.keys()
+    set_divider('_')
+
+
+def test_set_key_prefix():
+    delete_all_events()
+    client = get_redis('default')
+    set_key_prefix('HELLO')
+    mark_attribute('paid_user', 123)
+    assert 'HELLO_at_paid_user' in \
+        client.keys()
+    set_key_prefix('trackist')
+
+
+def test_get_all_event_names():
+    delete_all_events()
+
+    mark_event('signed-up', 123)
+    mark_event('logged-on', 123)
+
+    event_names = get_all_event_names()
+    assert set(['signed-up', 'logged-on']) == set(event_names)
+
+
+def test_get_all_attribute_names():
+    delete_all_events()
+
+    mark_attribute('sad', 123)
+    mark_attribute('happy', 123)
+
+    event_names = get_all_attribute_names()
+    assert set(['happy', 'sad']) == set(event_names)
