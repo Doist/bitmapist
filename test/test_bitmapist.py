@@ -21,20 +21,30 @@ def test_mark_with_diff_days():
     now = datetime.utcnow()
 
     # Month
+    month_ago = now - timedelta(days=30)
+
     assert 123 in MonthEvents('active', now.year, now.month)
     assert 124 not in MonthEvents('active', now.year, now.month)
+    assert 123 not in WeekEvents('active', month_ago.year, month_ago.month)
 
     # Week
+    week_ago = now - timedelta(days=7)
+
     assert 123 in WeekEvents('active', now.year, now.isocalendar()[1])
     assert 124 not in WeekEvents('active', now.year, now.isocalendar()[1])
+    assert 123 not in WeekEvents('active', week_ago.year, week_ago.isocalendar()[1])
 
     # Day
+    day_ago = now - timedelta(days=1)
+
     assert 123 in DayEvents('active', now.year, now.month, now.day)
     assert 124 not in DayEvents('active', now.year, now.month, now.day)
+    assert 123 not in DayEvents('active', day_ago.year, day_ago.month, day_ago.day)
 
     # Hour
     assert 123 in HourEvents('active', now.year, now.month, now.day, now.hour)
     assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour)
+    assert 123 not in HourEvents('active', now.year, now.month, now.day, now.hour - 1)
     assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour - 1)
 
 
@@ -49,6 +59,16 @@ def test_mark_counts():
     mark_event('active', 23232)
 
     assert len(MonthEvents('active', now.year, now.month)) == 2
+
+
+def test_mark_attribute_counts_multi():
+    delete_all_events()
+
+    assert Attributes('active').get_count() == 0
+
+    mark_attribute('active', [123, 23232])
+
+    assert len(Attributes('active')) == 2
 
 
 def test_mark_attribute_counts():

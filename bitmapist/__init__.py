@@ -179,7 +179,14 @@ def mark_attribute(attribute_name, uuid, system='default'):
     """
 
     obj = Attributes(attribute_name)
-    get_redis(system).setbit(obj.redis_key, uuid, 1)
+    if type(uuid) is int:
+        get_redis(system).setbit(obj.redis_key, uuid, 1)
+    elif type(uuid) is list:
+        with get_redis(system).pipeline() as p:
+            p.multi()
+            for _id in uuid:
+                p.setbit(obj.redis_key, _id, 1)
+            p.execute()
 
 
 def get_all_event_names(system='default'):
