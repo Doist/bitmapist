@@ -79,7 +79,6 @@ from datetime import datetime
 
 #--- Systems related ----------------------------------------------
 SYSTEMS = {
-    'default': redis.Redis(host='localhost', port=6379)
 }
 
 CONFIG = {
