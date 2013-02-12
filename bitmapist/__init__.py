@@ -106,6 +106,10 @@ def setup_redis(name, host, port, **kw):
     SYSTEMS[name] = redis.Redis(host=host, port=port, **kw)
 
 
+def setup_redis_raw(name, _redis):
+    SYSTEMS[name] = _redis
+
+
 def get_redis(system='default'):
     """
     Get a redis-py client instance with entry `system`.
