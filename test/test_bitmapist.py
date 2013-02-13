@@ -1,167 +1,146 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+from bitmapist import Bitmapist
+import redis
 
-from bitmapist import setup_redis, delete_all_events, mark_event,\
-                      MonthEvents, WeekEvents, DayEvents, HourEvents,\
-                      BitOpAnd, BitOpOr, Attributes, mark_attribute,\
-                      get_all_event_names, get_all_attribute_names,\
-                      set_divider, set_key_prefix, get_redis
-
-
-def setup_module():
-    setup_redis('default', 'localhost', 6380)
-    setup_redis('default_copy', 'localhost', 6380)
+client = redis.Redis('localhost', 6380)
+bm = Bitmapist(client)
 
 
 def test_mark_with_diff_days():
-    delete_all_events()
+    bm.delete_all_events()
 
-    mark_event('active', 123)
+    bm.mark_event('active', 123)
 
     now = datetime.utcnow()
 
     # Month
     month_ago = now - timedelta(days=30)
 
-    assert 123 in MonthEvents('active', now.year, now.month)
-    assert 124 not in MonthEvents('active', now.year, now.month)
-    assert 123 not in WeekEvents('active', month_ago.year, month_ago.month)
+    assert 123 in bm.get_month_event('active', now)
+    assert 124 not in bm.get_month_event('active', now)
+    assert 123 not in bm.get_week_event('active', month_ago)
 
     # Week
     week_ago = now - timedelta(days=7)
-
-    assert 123 in WeekEvents('active', now.year, now.isocalendar()[1])
-    assert 124 not in WeekEvents('active', now.year, now.isocalendar()[1])
-    assert 123 not in WeekEvents('active', week_ago.year, week_ago.isocalendar()[1])
+    assert 123 in bm.get_week_event('active', now)
+    assert 124 not in bm.get_week_event('active', now)
+    assert 123 not in bm.get_week_event('active', week_ago)
 
     # Day
     day_ago = now - timedelta(days=1)
 
-    assert 123 in DayEvents('active', now.year, now.month, now.day)
-    assert 124 not in DayEvents('active', now.year, now.month, now.day)
-    assert 123 not in DayEvents('active', day_ago.year, day_ago.month, day_ago.day)
+    assert 123 in bm.get_day_event('active', now)
+    assert 124 not in bm.get_day_event('active', now)
+    assert 123 not in bm.get_day_event('active', day_ago)
 
     # Hour
-    assert 123 in HourEvents('active', now.year, now.month, now.day, now.hour)
-    assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour)
-    assert 123 not in HourEvents('active', now.year, now.month, now.day, now.hour - 1)
-    assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour - 1)
+    hour_ago = now - timedelta(hours=1)
+    assert 123 in bm.get_hour_event('active', now)
+    assert 124 not in bm.get_hour_event('active', now)
+    assert 123 not in bm.get_hour_event('active', hour_ago)
+    assert 124 not in bm.get_hour_event('active', hour_ago)
 
 
 def test_mark_counts():
-    delete_all_events()
+    bm.delete_all_events()
 
     now = datetime.utcnow()
 
-    assert MonthEvents('active', now.year, now.month).get_count() == 0
+    assert bm.get_month_event('active', now).get_count() == 0
 
-    mark_event('active', 123)
-    mark_event('active', 23232)
+    bm.mark_event('active', 123)
+    bm.mark_event('active', 23232)
 
-    assert len(MonthEvents('active', now.year, now.month)) == 2
+    assert len(bm.get_month_event('active', now)) == 2
 
 
 def test_mark_attribute_counts_multi():
-    delete_all_events()
+    bm.delete_all_events()
 
-    assert Attributes('active').get_count() == 0
+    assert bm.get_attribute('active').get_count() == 0
 
-    mark_attribute('active', [123, 23232])
+    bm.mark_attribute('active', [123, 23232])
 
-    assert len(Attributes('active')) == 2
+    assert len(bm.get_attribute('active')) == 2
 
 
 def test_mark_attribute_counts():
-    delete_all_events()
+    bm.delete_all_events()
 
-    assert Attributes('active').get_count() == 0
+    assert bm.get_attribute('active').get_count() == 0
 
-    mark_attribute('active', 123)
-    mark_attribute('active', 23232)
+    bm.mark_attribute('active', 123)
+    bm.mark_attribute('active', 23232)
 
-    assert len(Attributes('active')) == 2
+    assert len(bm.get_attribute('active')) == 2
 
 
 def test_different_dates():
-    delete_all_events()
+    bm.delete_all_events()
 
     now = datetime.utcnow()
     yesterday = now - timedelta(days=1)
 
-    mark_event('active', 123, now=now)
-    mark_event('active', 23232, now=yesterday)
+    bm.mark_event('active', 123, now=now)
+    bm.mark_event('active', 23232, now=yesterday)
 
-    assert DayEvents('active',
-                   now.year,
-                   now.month,
-                   now.day).get_count() == 1
+    assert bm.get_day_event('active', now).get_count() == 1
 
-    assert DayEvents('active',
-                   yesterday.year,
-                   yesterday.month,
-                   yesterday.day).get_count() == 1
+    assert bm.get_day_event('active', yesterday).get_count() == 1
 
 
 def test_different_buckets():
-    delete_all_events()
+    bm.delete_all_events()
 
     now = datetime.utcnow()
 
-    mark_event('active', 123)
-    mark_event('tasks:completed', 23232)
+    bm.mark_event('active', 123)
+    bm.mark_event('tasks_completed', 23232)
 
-    assert MonthEvents('active', now.year, now.month).get_count() == 1
-    assert MonthEvents('tasks:completed', now.year, now.month).get_count() == 1
+    assert bm.get_month_event('active', now).get_count() == 1
+    assert bm.get_month_event('tasks_completed', now).get_count() == 1
 
 
 def test_bit_operations():
-    delete_all_events()
+    bm.delete_all_events()
 
     now = datetime.utcnow()
     last_month = datetime.utcnow() - timedelta(days=30)
 
     # 123 has been active for two months
-    mark_event('active', 123, now=now)
-    mark_event('active', 123, now=last_month)
+    bm.mark_event('active', 123, now=now)
+    bm.mark_event('active', 123, now=last_month)
 
     # 224 has only been active last_month
-    mark_event('active', 224, now=last_month)
+    bm.mark_event('active', 224, now=last_month)
 
     # Assert basic premises
-    assert MonthEvents('active', last_month.year, last_month.month).get_count() == 2
-    assert MonthEvents('active', now.year, now.month).get_count() == 1
+    assert bm.get_month_event('active', last_month).get_count() == 2
+    assert bm.get_month_event('active', now).get_count() == 1
 
     # Try out with bit AND operation
-    active_2_months = BitOpAnd(
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month)
+    active_2_months = bm.bit_op_and(
+        bm.get_month_event('active', last_month),
+        bm.get_month_event('active', now)
     )
     assert active_2_months.get_count() == 1
     assert 123 in active_2_months
     assert 224 not in active_2_months
 
     # Try out with bit OR operation
-    assert BitOpOr(
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month)
+    assert bm.bit_op_or(
+        bm.get_month_event('active', last_month),
+        bm.get_month_event('active', now)
     ).get_count() == 2
 
-    # Try out with a different system
-    active_2_months = BitOpAnd(
-        'default_copy',
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month),
-    )
-    assert active_2_months.get_count() == 1
-    assert active_2_months.system == 'default_copy'
-
     # Try nested operations
-    active_2_months = BitOpAnd(
-        BitOpAnd(
-            MonthEvents('active', last_month.year, last_month.month),
-            MonthEvents('active', now.year, now.month)
+    active_2_months = bm.bit_op_and(
+        bm.bit_op_and(
+            bm.get_month_event('active', last_month),
+            bm.get_month_event('active', now)
         ),
-        MonthEvents('active', now.year, now.month)
+        bm.get_month_event('active', now)
     )
 
     assert 123 in active_2_months
@@ -169,65 +148,61 @@ def test_bit_operations():
 
 
 def test_events_marked():
-    delete_all_events()
+    bm.delete_all_events()
 
     now = datetime.utcnow()
 
-    assert MonthEvents('active', now.year, now.month).get_count() == 0
-    assert MonthEvents('active', now.year, now.month).has_events_marked() == False
+    assert bm.get_month_event('active', now).get_count() == 0
+    assert bm.get_month_event('active', now).has_events_marked() == False
 
-    mark_event('active', 123, now=now)
+    bm.mark_event('active', 123, now=now)
 
-    assert MonthEvents('active', now.year, now.month).get_count() == 1
-    assert MonthEvents('active', now.year, now.month).has_events_marked() == True
+    assert bm.get_month_event('active', now).get_count() == 1
+    assert bm.get_month_event('active', now).has_events_marked() == True
 
 
 def test_attributes_marked():
-    delete_all_events()
+    bm.delete_all_events()
 
-    assert Attributes('paid_user').get_count() == 0
+    assert bm.get_attribute('paid_user').get_count() == 0
 
-    mark_attribute('paid_user', 123)
+    bm.mark_attribute('paid_user', 123)
 
-    assert Attributes('paid_user').get_count() == 1
-    assert 123 in Attributes('paid_user')
+    assert bm.get_attribute('paid_user').get_count() == 1
+    assert 123 in bm.get_attribute('paid_user')
 
 
 def test_set_divider():
-    delete_all_events()
-    client = get_redis('default')
-    set_divider(':')
-    mark_attribute('paid_user', 123)
-    assert 'trackist:at:paid_user' in \
+    bm2 = Bitmapist(client, divider='_')
+    bm2.delete_all_events()
+    bm2.mark_attribute('paiduser', 123)
+    assert 'trackist_at_paiduser' in \
         client.keys()
-    set_divider('_')
 
 
 def test_set_key_prefix():
-    delete_all_events()
-    client = get_redis('default')
-    set_key_prefix('HELLO')
-    mark_attribute('paid_user', 123)
-    assert 'HELLO_at_paid_user' in \
+    bm2 = Bitmapist(client, prefix='HELLO')
+    bm2.delete_all_events()
+    bm2.mark_attribute('paid_user', 123)
+    assert 'HELLO:at:paid_user' in \
         client.keys()
-    set_key_prefix('trackist')
 
 
 def test_get_all_event_names():
-    delete_all_events()
+    bm.delete_all_events()
 
-    mark_event('signed-up', 123)
-    mark_event('logged-on', 123)
+    bm.mark_event('signed-up', 123)
+    bm.mark_event('logged-on', 123)
 
-    event_names = get_all_event_names()
+    event_names = bm.get_all_event_names()
     assert set(['signed-up', 'logged-on']) == set(event_names)
 
 
 def test_get_all_attribute_names():
-    delete_all_events()
+    bm.delete_all_events()
 
-    mark_attribute('sad', 123)
-    mark_attribute('happy', 123)
+    bm.mark_attribute('sad', 123)
+    bm.mark_attribute('happy', 123)
 
-    event_names = get_all_attribute_names()
-    assert set(['happy', 'sad']) == set(event_names)
+    att_names = bm.get_all_attribute_names()
+    assert set(['happy', 'sad']) == set(att_names)

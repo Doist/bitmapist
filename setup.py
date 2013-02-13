@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version='2.3.1',
+      version='2.4',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -32,8 +32,8 @@ setup(name='bitmapist',
       description="Implements a powerful analytics library using Redis bitmaps.",
       long_description="""\
 bitmapist
----------------
-Implements a powerful analytics library using Redis bitmaps.
+~~~~~~~~~
+Implements a powerful analytics library on top of Redis's support for bitmaps and bitmap operations.
 
 This library makes it possible to implement real-time, highly scalable analytics that can answer following questions:
 
@@ -49,73 +49,63 @@ This library is very easy to use and enables you to create your own reports easi
 Using Redis bitmaps you can store events for millions of users in a very little amount of memory (megabytes).
 You should be careful about using huge ids (e.g. 2^32 or bigger) as this could require larger amounts of memory.
 
-Now with Cohort charts! Read more here:
-
-* Releasing bitmapist.cohort - or how we saved over $2000/month: http://amix.dk/blog/post/19718
-
 If you want to read more about bitmaps please read following:
-
 * http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
 * http://redis.io/commands/setbit
 * http://en.wikipedia.org/wiki/Bit_array
 * http://www.slideshare.net/crashlytics/crashlytics-on-redis-analytics
-* http://amix.dk/blog/post/19714 [my blog post]
 
 Requires Redis 2.6+ and newest version of redis-py.
 
 Examples
----------------
+========
 
 Setting things up::
 
     from datetime import datetime, timedelta
-    from bitmapist import setup_redis, delete_all_events, mark_event,\
-                          MonthEvents, WeekEvents, DayEvents, HourEvents,\
-                          BitOpAnd, BitOpOr
+    from bitmapist import Bitmapist
+
+    bm = Bitmapist(
+        redis_client=redis.Redis('localhost', 6379),
+        prefix='trackist',
+        divider=':')
 
     now = datetime.utcnow()
     last_month = datetime.utcnow() - timedelta(days=30)
 
-Mark user 123 as active and has played a song::
+Mark user 123 as active::
 
-    mark_event('active', 123)
-    mark_event('song:played', 123)
+    bm.mark_event('active', 123)
+
+Mark user 123 as a paid_user:
+
+    bm.mark_attribute('paid_user', 123)
 
 Answer if user 123 has been active this month::
 
-    assert 123 in MonthEvents('active', now.year, now.month)
-    assert 123 in MonthEvents('song:played', now.year, now.month)
-    assert MonthEvents('active', now.year, now.month).has_events_marked() == True
+    assert 123 in bm.get_month_event('active', now)
 
 How many users have been active this week?::
 
-    print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+    print len(bm.get_week_event('active', now))
 
-Perform bit operations. How many users that have been active last month are still active this month?::
+Perform bit operations. Which users that have been active last month are still active this month?::
 
-    active_2_months = BitOpAnd(
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month)
+    active_2_months = bm.bit_op_and(
+        bm.get_month_event('active', last_month),
+        bm.get_month_event('active', now),
     )
-    print len(active_2_months)
 
-    # Is 123 active for 2 months?
-    assert 123 in active_2_months
+Nest bit operations!::
 
-Work with nested bit operations (imagine what you can do with this ;-))::
-
-    active_2_months = BitOpAnd(
-        BitOpAnd(
-            MonthEvents('active', last_month.year, last_month.month),
-            MonthEvents('active', now.year, now.month)
+    active_2_months = bm.bit_op_and(
+        bm.bit_op_and(
+            bm.get_month_event('active', last_month),
+            bm.get_month_event('active', now),
         ),
-        MonthEvents('active', now.year, now.month)
+        bm.get_attribute('paid_user')
     )
-    print len(active_2_months)
-    assert 123 in active_2_months
 
-Copyright: 2012 by Doist Ltd.
-
-Developer: Amir Salihefendic ( http://amix.dk )
-
-License: BSD""")
+:copyright: 2012 by Doist Ltd.
+:developer: Amir Salihefendic ( http://amix.dk )
+:license: BSD""")
