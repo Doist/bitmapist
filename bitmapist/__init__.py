@@ -116,6 +116,9 @@ class Bitmapist:
     def bit_op_xor(self, *bitmaps):
         return BitOpXor(self.prefix, self.divider, self.redis_client, *bitmaps)
 
+    def bit_op_not(self, bitmap):
+        return BitOpNot(self.prefix, self.divider, self.redis_client, bitmap)
+
     #--- Events marking and deleting ----------------------------------------------
     def mark_event(self, event_name, uuid, now=None):
         """
@@ -387,14 +390,20 @@ class BitOperation(Bitmap):
             '-'.join(event_redis_keys),
             ])
 
-        self.redis_client = cli = redis_client
-        cli.bitop(op_name, self.redis_key, *event_redis_keys)
+        self.redis_client = redis_client
+        self.redis_client.bitop(op_name, self.redis_key, *event_redis_keys)
 
 
 class BitOpAnd(BitOperation):
 
     def __init__(self, prefix, divider, redis_client, *events):
         BitOperation.__init__(self, 'AND', prefix, divider, redis_client, *events)
+
+
+class BitOpNot(BitOperation):
+
+    def __init__(self, prefix, divider, redis_client, event):
+        BitOperation.__init__(self, 'Not', prefix, divider, redis_client, event)
 
 
 class BitOpOr(BitOperation):
