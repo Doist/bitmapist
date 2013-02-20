@@ -120,13 +120,17 @@ class Bitmapist:
         return BitOpNot(self.prefix, self.divider, self.redis_client, bitmap)
 
     #--- Events marking and deleting ----------------------------------------------
-    def mark_event(self, event_name, uuid, now=None):
+    def mark_event(self, event_name, uuid, now=None, month=True, week=True, day=True, hour=True):
         """
         Marks an event for hours, days, weeks and months.
 
         :param :event_name The name of the event, could be "active" or "new_signups"
         :param :uuid An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
         :param :now Which date should be used as a reference point, default is `datetime.utcnow`
+        :param :month Whether the month granularity for the event should be saved
+        :param :week Whether the week granularity for the event should be saved
+        :param :day Whether the day granularity for the event should be saved
+        :param :hour Whether the hour granularity for the event should be saved
 
         Examples::
 
@@ -139,12 +143,15 @@ class Bitmapist:
         if not now:
             now = datetime.utcnow()
 
-        stat_objs = (
-            self.get_month_event(event_name, now),
-            self.get_week_event(event_name, now),
-            self.get_day_event(event_name, now),
-            self.get_hour_event(event_name, now),
-        )
+        stat_objs = []
+        if month:
+            stat_objs.append(self.get_month_event(event_name, now))
+        if week:
+            stat_objs.append(self.get_week_event(event_name, now))
+        if day:
+            stat_objs.append(self.get_day_event(event_name, now))
+        if hour:
+            stat_objs.append(self.get_hour_event(event_name, now))
 
         with self.redis_client.pipeline() as p:
             p.multi()
