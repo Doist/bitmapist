@@ -96,7 +96,7 @@ class Bitmapist:
         return MonthEvents(event_name, now.year, now.month, self.prefix, self.divider, self.redis_client)
 
     def get_week_event(self, event_name, now):
-        return WeekEvents(event_name, now.year, now.isocalendar()[1], self.prefix, self.divider, self.redis_client)
+        return WeekEvents(event_name, now.isocalendar()[0], now.isocalendar()[1], self.prefix, self.divider, self.redis_client)
 
     def get_day_event(self, event_name, now):
         return DayEvents(event_name, now.year, now.month, now.day, self.prefix, self.divider, self.redis_client)
