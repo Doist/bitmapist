@@ -159,12 +159,24 @@ class Bitmapist:
                 p.setbit(obj.redis_key, uuid, 1)
             p.execute()
 
-    def mark_attribute(self, attribute_name, uuid):
+    def mark_attribute_multi(self, attribute_name, uuids, mark_as=1):
+        if mark_as not in (0, 1):
+            raise ValueError('Can only mark bitmaps with 0 or 1')
+
+        obj = self.get_attribute(attribute_name)
+        with self.redis_client.pipeline() as p:
+            p.multi()
+            for _id in uuids:
+                p.setbit(obj.redis_key, _id, mark_as)
+            p.execute()
+
+    def mark_attribute(self, attribute_name, uuid, mark_as=1):
         """
         Marks an attribute that is not time specific.
 
         :param :attribute_name The name of the attribute, e.g. "paid_user" or "new_email_split_test_group"
         :param :uuid An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
+        :param :mark_as An int of 1 or 0 to set uuid to
 
         Examples::
 
@@ -172,15 +184,14 @@ class Bitmapist:
             bm.mark_attribute('paid_user', 1)
         """
 
+        if mark_as not in (0, 1):
+            raise ValueError('Can only mark bitmaps with 0 or 1')
+
+        if type(uuid) is list:
+            return self.mark_attribute_multi(attribute_name, uuid, mark_as)
+
         obj = self.get_attribute(attribute_name)
-        if type(uuid) is int:
-            self.redis_client.setbit(obj.redis_key, uuid, 1)
-        elif type(uuid) is list:
-            with self.redis_client.pipeline() as p:
-                p.multi()
-                for _id in uuid:
-                    p.setbit(obj.redis_key, _id, 1)
-                p.execute()
+        self.redis_client.setbit(obj.redis_key, uuid, mark_as)
 
     def get_all_event_names(self):
         """

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+import unittest
+
 from bitmapist import Bitmapist
 import redis
 
@@ -55,14 +57,36 @@ def test_mark_counts():
     assert len(bm.get_month_event('active', now)) == 2
 
 
+def test_mark_attribute_multi_with_invalid_mark_as():
+    bm.delete_all_events()
+    assert bm.get_attribute('active').get_count() == 0
+    try:
+        bm.mark_attribute('active', 123, 4)
+    except ValueError:
+        pass
+    else:
+        raise Exception('No error thrown when expected')
+
+
+def test_mark_attribute_multi_with_mark_as_works():
+    bm.delete_all_events()
+    assert bm.get_attribute('active').get_count() == 0
+    bm.mark_attribute('active', 123)
+    assert bm.get_attribute('active').get_count() == 1
+    bm.mark_attribute('active', 123, 0)
+    assert bm.get_attribute('active').get_count() == 0
+
+
 def test_mark_attribute_counts_multi():
     bm.delete_all_events()
 
     assert bm.get_attribute('active').get_count() == 0
 
-    bm.mark_attribute('active', [123, 23232])
+    bm.mark_attribute_multi('active', [123, 23232])
 
     assert len(bm.get_attribute('active')) == 2
+    assert 123 in bm.get_attribute('active')
+    assert 23232 in bm.get_attribute('active')
 
 
 def test_mark_attribute_counts():
