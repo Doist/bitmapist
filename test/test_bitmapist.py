@@ -212,6 +212,24 @@ def test_attribute_get_count():
     assert bm.get_attribute('paid_user').get_count(136, 139) == 3
 
 
+def test_event_get_count():
+    bm.delete_all_events()
+    now = datetime.utcnow()
+
+    assert bm.get_month_event('active', now).get_count() == 0
+
+    for uid in xrange(123, 144):
+        bm.mark_event('active', uid, now)
+    assert bm.get_month_event('active', now).get_count() == 21
+    assert bm.get_month_event('active', now).get_count(120, 128) == 5
+    assert bm.get_month_event('active', now).get_count(128, 136) == 8
+    assert bm.get_month_event('active', now).get_count(128, 144) == 16
+    assert bm.get_month_event('active', now).get_count(128, 146) == 16
+    assert bm.get_month_event('active', now).get_count(120, 136) == 13
+    assert bm.get_month_event('active', now).get_count(132, 140) == 8
+    assert bm.get_month_event('active', now).get_count(136, 139) == 3
+
+
 def test_set_divider():
     bm2 = Bitmapist(client, divider='_')
     bm2.delete_all_events()
