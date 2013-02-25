@@ -80,6 +80,7 @@ Nest bit operations!::
 :license: BSD
 """
 
+import math
 import re
 
 from datetime import datetime
@@ -261,10 +262,39 @@ class MixinCounts:
     Extends with an obj.get_count() that uses BITCOUNT to
     count all the events. Supports also __len__
     """
-    def get_count(self):
+    def get_count(self, start_bit=None, end_bit=None):
+        """
+        Redis bitcount command start/end paramaters use Byte units
+        whereas setbit operations are on a bit basis
+        We can either approximate or use this hack to determine exact count
+
+        :param :start_bit Starting bit, inclusive
+        :param :end_bit Ending bit, not inclusive
+         """
         cli = self.redis_client
-        count = cli.bitcount(self.redis_key)
-        return count
+        if not start_bit and not end_bit:
+            return cli.bitcount(self.redis_key)
+
+        start_byte = int(math.ceil(start_bit / 8.0))   # First byte that is entirely
+                                                   # in the range of bits specified
+        end_byte = int(math.floor(end_bit / 8.0) - 1)  # Last byte that is entirely
+                                                   # in the range of bits specified
+        total = 0
+
+        # Bits before the start_byte
+        bit_floor = start_byte * 8
+
+        # Bits after end_byte
+        bit_ceiling = (end_byte + 1) * 8
+
+        for offset in xrange(start_bit, bit_floor):
+            total += cli.getbit(self.redis_key, offset)
+        for offset in xrange(bit_ceiling, end_bit):
+            total += cli.getbit(self.redis_key, offset)
+
+        total += cli.bitcount(self.redis_key, start=start_byte, end=end_byte)
+
+        return total
 
     def __len__(self):
         return self.get_count()

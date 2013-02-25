@@ -196,6 +196,22 @@ def test_attributes_marked():
     assert 123 in bm.get_attribute('paid_user')
 
 
+def test_attribute_get_count():
+    bm.delete_all_events()
+
+    assert bm.get_attribute('paid_user').get_count() == 0
+
+    bm.mark_attribute_multi('paid_user', range(123, 144))
+    assert bm.get_attribute('paid_user').get_count() == 21
+    assert bm.get_attribute('paid_user').get_count(120, 128) == 5
+    assert bm.get_attribute('paid_user').get_count(128, 136) == 8
+    assert bm.get_attribute('paid_user').get_count(128, 144) == 16
+    assert bm.get_attribute('paid_user').get_count(128, 146) == 16
+    assert bm.get_attribute('paid_user').get_count(120, 136) == 13
+    assert bm.get_attribute('paid_user').get_count(132, 140) == 8
+    assert bm.get_attribute('paid_user').get_count(136, 139) == 3
+
+
 def test_set_divider():
     bm2 = Bitmapist(client, divider='_')
     bm2.delete_all_events()
