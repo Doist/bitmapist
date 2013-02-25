@@ -165,7 +165,7 @@ class Bitmapist:
             raise ValueError('Can only mark bitmaps with 0 or 1')
 
         obj = self.get_attribute(attribute_name)
-        with self.redis_client.pipeline() as p:
+        with self.redis_client.pipeline(transaction=False) as p:
             p.multi()
             for _id in uuids:
                 p.setbit(obj.redis_key, _id, mark_as)
