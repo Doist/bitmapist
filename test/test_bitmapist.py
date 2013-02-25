@@ -171,6 +171,16 @@ def test_bit_operations():
     assert 224 not in active_2_months
 
 
+def test_bit_operation_not():
+    bm.delete_all_events()
+    bm.mark_attribute('paid_user', 4)
+    bm.mark_attribute('paid_user', 7)
+    assert len(bm.bit_op_not(bm.get_attribute('paid_user'))) == 6
+
+    bm.mark_attribute('paid_user', 9)
+    assert len(bm.bit_op_not(bm.get_attribute('paid_user'))) == 13
+
+
 def test_events_marked():
     bm.delete_all_events()
 
