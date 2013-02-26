@@ -86,7 +86,7 @@ import re
 from datetime import datetime
 
 
-class Bitmapist:
+class Bitmapist(object):
 
     def __init__(self, redis_client, prefix='trackist', divider=':'):
         self.redis_client = redis_client
