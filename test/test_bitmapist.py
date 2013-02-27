@@ -2,11 +2,39 @@
 from datetime import datetime, timedelta
 import unittest
 
-from bitmapist import Bitmapist
+from bitmapist import Bitmapist, MixinCounts
 import redis
 
 client = redis.Redis('localhost', 6380)
 bm = Bitmapist(client)
+
+
+def test_convert_start_bits_to_btye():
+    counter = MixinCounts()
+    assert counter._convert_to_start_byte(120) == 15
+    assert counter._convert_to_start_byte(122) == 16
+    assert counter._convert_to_start_byte(127) == 16
+    assert counter._convert_to_start_byte(128) == 16
+    assert counter._convert_to_start_byte(7) == 1
+    assert counter._convert_to_start_byte(9) == 2
+    assert counter._convert_to_start_byte(-1) == -1
+    assert counter._convert_to_start_byte(-7) == -1
+    assert counter._convert_to_start_byte(-8) == -2
+    assert counter._convert_to_start_byte(-123) == -16, counter._convert_to_start_byte(-123)
+
+
+def test_convert_end_bits_to_btye():
+    counter = MixinCounts()
+    assert counter._convert_to_end_byte(120) == 15
+    assert counter._convert_to_end_byte(122) == 15
+    assert counter._convert_to_end_byte(127) == 15
+    assert counter._convert_to_end_byte(128) == 16
+    assert counter._convert_to_end_byte(7) == 0
+    assert counter._convert_to_end_byte(9) == 1
+    assert counter._convert_to_end_byte(-1) == -1
+    assert counter._convert_to_end_byte(-7) == -1
+    assert counter._convert_to_end_byte(-8) == -2
+    assert counter._convert_to_end_byte(-123) == -15, counter._convert_to_end_byte(-123)
 
 
 def test_mark_with_diff_days():

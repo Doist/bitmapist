@@ -275,11 +275,11 @@ class MixinCounts:
         if not start_bit and not end_bit:
             return cli.bitcount(self.redis_key)
 
-        start_byte = int(math.ceil(start_bit / 8.0))   # First byte that is entirely
-                                                   # in the range of bits specified
-        end_byte = int(math.floor(end_bit / 8.0) - 1)  # Last byte that is entirely
-                                                   # in the range of bits specified
-        total = 0
+        start_byte = self._convert_to_start_byte(start_bit)   # First byte that is entirely
+                                                              # in the range of bits specified
+        end_byte = self._convert_to_end_byte(end_bit)         # Last byte that is entirely
+                                                              # in the range of bits specified
+        total_bits = 0
 
         # Bits before the start_byte
         bit_floor = start_byte * 8
@@ -287,14 +287,29 @@ class MixinCounts:
         # Bits after end_byte
         bit_ceiling = (end_byte + 1) * 8
 
-        for offset in xrange(start_bit, bit_floor):
-            total += cli.getbit(self.redis_key, offset)
-        for offset in xrange(bit_ceiling, end_bit):
-            total += cli.getbit(self.redis_key, offset)
+        for offset in xrange(start_bit, bit_floor, (start_bit >= 0 and 1 or -1)):
+            total_bits += cli.getbit(self.redis_key, offset)
+        for offset in xrange(bit_ceiling, end_bit, (bit_ceiling >= 0 and 1 or -1)):
+            total_bits += cli.getbit(self.redis_key, offset)
 
-        total += cli.bitcount(self.redis_key, start=start_byte, end=end_byte)
+        total_bits += cli.bitcount(self.redis_key, start=start_byte, end=end_byte)
 
-        return total
+        return total_bits
+
+    def _convert_to_start_byte(self, bit):
+        if bit < 0:
+            return int(math.ceil(bit / 8.0)) - 1
+        else:
+            return int(math.ceil(bit / 8.0))
+
+    def _convert_to_end_byte(self, bit):
+        if bit < 0:
+            if bit >= -8:
+                return int(math.ceil(bit / 8.0)) - 1
+            else:
+                return int(math.ceil(bit / 8.0))
+        else:
+            return int(math.floor(bit / 8.0))
 
     def __len__(self):
         return self.get_count()
