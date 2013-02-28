@@ -262,6 +262,9 @@ class MixinCounts:
     Extends with an obj.get_count() that uses BITCOUNT to
     count all the events. Supports also __len__
     """
+
+    ERROR = 'error'
+
     def get_count(self, start_bit=None, end_bit=None):
         """
         Redis bitcount command start/end paramaters use Byte units
@@ -270,7 +273,9 @@ class MixinCounts:
 
         :param :start_bit Starting bit, inclusive
         :param :end_bit Ending bit, not inclusive
-         """
+        """
+        # TODO: deal with errors in what is passed in
+
         cli = self.redis_client
         if not start_bit and not end_bit:
             return cli.bitcount(self.redis_key)
@@ -281,35 +286,40 @@ class MixinCounts:
                                                               # in the range of bits specified
         total_bits = 0
 
-        # Bits before the start_byte
-        bit_floor = start_byte * 8
+        # TODO: pipeline this
+        if start_byte != self.ERROR and end_byte != self.ERROR:
 
-        # Bits after end_byte
-        bit_ceiling = (end_byte + 1) * 8
+            # Bits before the start_byte
+            bit_floor = start_byte * 8
+            for offset in xrange(start_bit, bit_floor, (start_bit >= 0 and 1 or -1)):
+                total_bits += cli.getbit(self.redis_key, offset)
 
-        for offset in xrange(start_bit, bit_floor, (start_bit >= 0 and 1 or -1)):
-            total_bits += cli.getbit(self.redis_key, offset)
-        for offset in xrange(bit_ceiling, end_bit, (bit_ceiling >= 0 and 1 or -1)):
-            total_bits += cli.getbit(self.redis_key, offset)
+            # Bits that fall inside the bytes
+            total_bits += cli.bitcount(self.redis_key, start=start_byte, end=end_byte)
 
-        total_bits += cli.bitcount(self.redis_key, start=start_byte, end=end_byte)
+            # Bits after end_byte
+            bit_ceiling = (end_byte + 1) * 8
+            for offset in xrange(bit_ceiling, end_bit, (bit_ceiling >= 0 and 1 or -1)):
+                total_bits += cli.getbit(self.redis_key, offset)
+        else:
+            for offest in xrange(start_bit, end_bit):
+                total_bits += cli.getbit(self.redis_key, offset)
 
         return total_bits
 
     def _convert_to_start_byte(self, bit):
-        if bit < 0:
-            return int(math.ceil(bit / 8.0)) - 1
+        if -7 <= bit < 0:
+            return self.ERROR
         else:
-            return int(math.ceil(bit / 8.0))
+            return (bit + 7) / 8
 
     def _convert_to_end_byte(self, bit):
         if bit < 0:
-            if bit >= -8:
-                return int(math.ceil(bit / 8.0)) - 1
-            else:
-                return int(math.ceil(bit / 8.0))
+            return (bit + 1) / 8 - 1
+        elif bit < 7:
+            return self.ERROR
         else:
-            return int(math.floor(bit / 8.0))
+            return (bit - 7) / 8
 
     def __len__(self):
         return self.get_count()
