@@ -272,7 +272,7 @@ class MixinCounts:
         We can either approximate or use this hack to determine exact count
 
         :param :start_bit Starting bit, inclusive
-        :param :end_bit Ending bit, not inclusive
+        :param :end_bit Ending bit, inclusive
         """
         # TODO: deal with errors in what is passed in
 
@@ -299,10 +299,10 @@ class MixinCounts:
 
             # Bits after end_byte
             bit_ceiling = (end_byte + 1) * 8
-            for offset in xrange(bit_ceiling, end_bit, (bit_ceiling >= 0 and 1 or -1)):
+            for offset in xrange(bit_ceiling, end_bit + 1, (bit_ceiling >= 0 and 1 or -1)):
                 total_bits += cli.getbit(self.redis_key, offset)
         else:
-            for offest in xrange(start_bit, end_bit):
+            for offset in xrange(start_bit, end_bit + 1):
                 total_bits += cli.getbit(self.redis_key, offset)
 
         return total_bits

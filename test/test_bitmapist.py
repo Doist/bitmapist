@@ -253,14 +253,25 @@ def test_attribute_get_count():
 
     bm.mark_attribute_multi('paid_user', range(123, 144))
     assert bm.get_attribute('paid_user').get_count() == 21
-    assert bm.get_attribute('paid_user').get_count(120, 128) == 5
-    assert bm.get_attribute('paid_user').get_count(128, 136) == 8
+    assert bm.get_attribute('paid_user').get_count(120, 128) == 6
+    assert bm.get_attribute('paid_user').get_count(128, 136) == 9
     assert bm.get_attribute('paid_user').get_count(128, 144) == 16
     assert bm.get_attribute('paid_user').get_count(128, 146) == 16
-    assert bm.get_attribute('paid_user').get_count(120, 136) == 13
-    assert bm.get_attribute('paid_user').get_count(132, 140) == 8
-    assert bm.get_attribute('paid_user').get_count(136, 139) == 3
+    assert bm.get_attribute('paid_user').get_count(120, 136) == 14
+    assert bm.get_attribute('paid_user').get_count(132, 140) == 9
+    assert bm.get_attribute('paid_user').get_count(136, 139) == 4
     assert bm.get_attribute('paid_user').get_count(0, -1) == 21
+
+
+def test_attribute_get_count_for_low_bits():
+    bm.delete_all_events()
+
+    assert bm.get_attribute('paid_user').get_count() == 0
+
+    bm.mark_attribute_multi('paid_user', range(0, 30))
+    assert bm.get_attribute('paid_user').get_count() == 30
+    att = bm.get_attribute('paid_user')
+    assert att.get_count(2, 5) == 4
 
 
 def test_event_get_count():
@@ -272,13 +283,14 @@ def test_event_get_count():
     for uid in xrange(123, 144):
         bm.mark_event('active', uid, now)
     assert bm.get_month_event('active', now).get_count() == 21
-    assert bm.get_month_event('active', now).get_count(120, 128) == 5
-    assert bm.get_month_event('active', now).get_count(128, 136) == 8
+    assert bm.get_month_event('active', now).get_count(120, 128) == 6
+    assert bm.get_month_event('active', now).get_count(128, 136) == 9
     assert bm.get_month_event('active', now).get_count(128, 144) == 16
     assert bm.get_month_event('active', now).get_count(128, 146) == 16
-    assert bm.get_month_event('active', now).get_count(120, 136) == 13
-    assert bm.get_month_event('active', now).get_count(132, 140) == 8
-    assert bm.get_month_event('active', now).get_count(136, 139) == 3
+    assert bm.get_month_event('active', now).get_count(120, 136) == 14
+    assert bm.get_month_event('active', now).get_count(132, 140) == 9
+    assert bm.get_month_event('active', now).get_count(136, 139) == 4
+    assert bm.get_month_event('active', now).get_count(0, -1) == 21
 
 
 def test_set_divider():
