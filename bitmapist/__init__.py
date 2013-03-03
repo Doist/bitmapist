@@ -66,6 +66,15 @@ Nest bit operations!::
         MonthEvents('active', now.year, now.month)
     )
 
+As something new tracking hourly is disabled (to save memory!) To enable it as default do::
+
+    import bitmapist
+    bitmapist.TRACK_HOURLY = True
+
+Additionally you can supply an extra argument to mark_event to bypass the default value::
+
+    mark_event('active', 123, track_hourly=False)
+
 :copyright: 2012 by Doist Ltd.
 :developer: Amir Salihefendic ( http://amix.dk )
 :license: BSD
@@ -80,6 +89,11 @@ from datetime import datetime
 SYSTEMS = {
     'default': redis.Redis(host='localhost', port=6379)
 }
+
+# Should hourly be tracked as default?
+# Note that this can have huge implications in amounts
+# of memory that Redis uses (especially with huge integers)
+TRACK_HOURLY = False
 
 def setup_redis(name, host, port, **kw):
     """
@@ -108,7 +122,7 @@ def get_redis(system='default'):
 
 
 #--- Events marking and deleting ----------------------------------------------
-def mark_event(event_name, uuid, system='default', now=None):
+def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
     """
     Marks an event for hours, days, weeks and months.
 
@@ -116,6 +130,7 @@ def mark_event(event_name, uuid, system='default', now=None):
     :param :uuid An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
     :param :system The Redis system to use
     :param :now Which date should be used as a reference point, default is `datetime.utcnow`
+    :param :track_hourly Should hourly stats be tracked, defaults to bitmapist.TRACK_HOURLY, but an be changed
 
     Examples::
 
@@ -125,6 +140,9 @@ def mark_event(event_name, uuid, system='default', now=None):
         # Mark task completed for id 252
         mark_event('tasks:completed', 252)
     """
+    if track_hourly == None:
+        track_hourly = TRACK_HOURLY
+
     if not now:
         now = datetime.utcnow()
 
@@ -132,13 +150,14 @@ def mark_event(event_name, uuid, system='default', now=None):
         MonthEvents(event_name, now.year, now.month),
         WeekEvents(event_name, now.year, now.isocalendar()[1]),
         DayEvents(event_name, now.year, now.month, now.day),
-        HourEvents(event_name, now.year, now.month, now.day, now.hour)
+        HourEvents(event_name, now.year, now.month, now.day, now.hour) if track_hourly else None
     )
 
     with get_redis(system).pipeline() as p:
         p.multi()
         for obj in stat_objs:
-            p.setbit(obj.redis_key, uuid, 1)
+            if obj != None:
+                p.setbit(obj.redis_key, uuid, 1)
         p.execute()
 
 

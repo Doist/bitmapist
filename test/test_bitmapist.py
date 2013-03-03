@@ -14,7 +14,7 @@ def setup_module():
 def test_mark_with_diff_days():
     delete_all_events()
 
-    mark_event('active', 123)
+    mark_event('active', 123, track_hourly=True)
 
     now = datetime.utcnow()
 

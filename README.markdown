@@ -107,6 +107,19 @@ print len(active_2_months)
 assert 123 in active_2_months
 ```
 
+As something new tracking hourly is disabled (to save memory!) To enable it as default do::
+
+```python
+import bitmapist
+bitmapist.TRACK_HOURLY = True
+```
+
+Additionally you can supply an extra argument to `mark_event` to bypass the default value::
+
+```python
+mark_event('active', 123, track_hourly=False)
+```
+
 Copyright: 2012 by Doist Ltd.
 
 Developer: Amir Salihefendic ( http://amix.dk )

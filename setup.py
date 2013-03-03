@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '2.22',
+      version = '2.3',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -113,6 +113,15 @@ Work with nested bit operations (imagine what you can do with this ;-))::
     )
     print len(active_2_months)
     assert 123 in active_2_months
+
+As something new tracking hourly is disabled (to save memory!) To enable it as default do::
+
+    import bitmapist
+    bitmapist.TRACK_HOURLY = True
+
+Additionally you can supply an extra argument to mark_event to bypass the default value::
+
+    mark_event('active', 123, track_hourly=False)
 
 Copyright: 2012 by Doist Ltd.
 
