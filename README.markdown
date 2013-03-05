@@ -50,10 +50,11 @@ Examples
 Setting things up:
 
 ```python
+import redis
 from datetime import datetime, timedelta
-from bitmapist import setup_redis, delete_all_events, mark_event,\
-                      MonthEvents, WeekEvents, DayEvents, HourEvents,\
-                      BitOpAnd, BitOpOr
+from bitmapist import Bitmapist
+
+bm = Bitmapist(redis_client=redis.Redis('localhost', 6379))
 
 now = datetime.utcnow()
 last_month = datetime.utcnow() - timedelta(days=30)
@@ -62,30 +63,35 @@ last_month = datetime.utcnow() - timedelta(days=30)
 Mark user 123 as active and has played a song:
 
 ```python
-mark_event('active', 123)
-mark_event('song:played', 123)
+bm.mark_event('active', 123)
+bm.mark_event('song:played', 123)
+```
+
+Mark user 123 as a paid user:
+
+```python
+bm.mark_attribute('paid_user', 123)
 ```
 
 Answer if user 123 has been active this month:
 
 ```python
-assert 123 in MonthEvents('active', now.year, now.month)
-assert 123 in MonthEvents('song:played', now.year, now.month)
-assert MonthEvents('active', now.year, now.month).has_events_marked() == True
+assert 123 in bm.get_month_event('active', now)
+assert bm.get_month_event('active', now).has_events_marked() == True
 ```
 
 How many users have been active this week?:
 
 ```python
-print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+print len(bm.get_week_event('active', now))
 ```
 
 Perform bit operations. How many users that have been active last month are still active this month?
 
 ```python
-active_2_months = BitOpAnd(
-    MonthEvents('active', last_month.year, last_month.month),
-    MonthEvents('active', now.year, now.month)
+active_2_months = bm.bit_op_and(
+    bm.get_month_event('active', last_month),
+    bm.get_month_event('active', now),
 )
 print len(active_2_months)
 
@@ -96,12 +102,12 @@ assert 123 in active_2_months
 Work with nested bit operations (imagine what you can do with this ;-))!
 
 ```python
-active_2_months = BitOpAnd(
-    BitOpAnd(
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month)
+active_2_months = bm.bit_op_and(
+    bm.bit_op_and(
+        bm.get_month_event('active', last_month),
+        bm.get_month_event('active', now),
     ),
-    MonthEvents('active', now.year, now.month)
+    bm.get_attribute('paid_user')
 )
 print len(active_2_months)
 assert 123 in active_2_months

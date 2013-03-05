@@ -66,10 +66,7 @@ Setting things up::
     from datetime import datetime, timedelta
     from bitmapist import Bitmapist
 
-    bm = Bitmapist(
-        redis_client=redis.Redis('localhost', 6379),
-        prefix='trackist',
-        divider=':')
+    bm = Bitmapist(redis_client=redis.Redis('localhost', 6379))
 
     now = datetime.utcnow()
     last_month = datetime.utcnow() - timedelta(days=30)
