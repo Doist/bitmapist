@@ -50,7 +50,7 @@ def test_convert_end_bits_to_btye():
 
 
 def test_mark_with_diff_days():
-    bm.delete_all_events()
+    bm.delete_all()
 
     bm.mark_event('active', 123)
 
@@ -85,7 +85,7 @@ def test_mark_with_diff_days():
 
 
 def test_mark_counts():
-    bm.delete_all_events()
+    bm.delete_all()
 
     now = datetime.utcnow()
 
@@ -98,7 +98,7 @@ def test_mark_counts():
 
 
 def test_mark_attribute_multi_with_invalid_mark_as():
-    bm.delete_all_events()
+    bm.delete_all()
     assert bm.get_attribute('active').get_count() == 0
     try:
         bm.mark_attribute('active', 123, 4)
@@ -109,7 +109,7 @@ def test_mark_attribute_multi_with_invalid_mark_as():
 
 
 def test_mark_attribute_multi_with_mark_as_works():
-    bm.delete_all_events()
+    bm.delete_all()
     assert bm.get_attribute('active').get_count() == 0
     bm.mark_attribute('active', 123)
     assert bm.get_attribute('active').get_count() == 1
@@ -118,7 +118,7 @@ def test_mark_attribute_multi_with_mark_as_works():
 
 
 def test_mark_attribute_counts_multi():
-    bm.delete_all_events()
+    bm.delete_all()
 
     assert bm.get_attribute('active').get_count() == 0
 
@@ -130,7 +130,7 @@ def test_mark_attribute_counts_multi():
 
 
 def test_mark_attribute_counts():
-    bm.delete_all_events()
+    bm.delete_all()
 
     assert bm.get_attribute('active').get_count() == 0
 
@@ -141,7 +141,7 @@ def test_mark_attribute_counts():
 
 
 def test_different_dates():
-    bm.delete_all_events()
+    bm.delete_all()
 
     now = datetime.utcnow()
     yesterday = now - timedelta(days=1)
@@ -155,7 +155,7 @@ def test_different_dates():
 
 
 def test_different_buckets():
-    bm.delete_all_events()
+    bm.delete_all()
 
     now = datetime.utcnow()
 
@@ -167,7 +167,7 @@ def test_different_buckets():
 
 
 def test_bit_operations():
-    bm.delete_all_events()
+    bm.delete_all()
 
     now = datetime.utcnow()
     last_month = datetime.utcnow() - timedelta(days=30)
@@ -212,7 +212,7 @@ def test_bit_operations():
 
 
 def test_bit_operation_not():
-    bm.delete_all_events()
+    bm.delete_all()
     bm.mark_attribute('paid_user', 4)
     bm.mark_attribute('paid_user', 7)
     assert len(bm.bit_op_not(bm.get_attribute('paid_user'))) == 6
@@ -222,7 +222,7 @@ def test_bit_operation_not():
 
 
 def test_events_marked():
-    bm.delete_all_events()
+    bm.delete_all()
 
     now = datetime.utcnow()
 
@@ -236,7 +236,7 @@ def test_events_marked():
 
 
 def test_attributes_marked():
-    bm.delete_all_events()
+    bm.delete_all()
 
     assert bm.get_attribute('paid_user').get_count() == 0
 
@@ -247,7 +247,7 @@ def test_attributes_marked():
 
 
 def test_attribute_get_count():
-    bm.delete_all_events()
+    bm.delete_all()
 
     assert bm.get_attribute('paid_user').get_count() == 0
 
@@ -264,7 +264,7 @@ def test_attribute_get_count():
 
 
 def test_attribute_get_count_for_low_bits():
-    bm.delete_all_events()
+    bm.delete_all()
 
     assert bm.get_attribute('paid_user').get_count() == 0
 
@@ -275,7 +275,7 @@ def test_attribute_get_count_for_low_bits():
 
 
 def test_event_get_count():
-    bm.delete_all_events()
+    bm.delete_all()
     now = datetime.utcnow()
 
     assert bm.get_month_event('active', now).get_count() == 0
@@ -295,7 +295,7 @@ def test_event_get_count():
 
 def test_set_divider():
     bm2 = Bitmapist(client, divider='_')
-    bm2.delete_all_events()
+    bm2.delete_all()
     bm2.mark_attribute('paiduser', 123)
     assert 'trackist_at_paiduser' in \
         client.keys()
@@ -303,14 +303,14 @@ def test_set_divider():
 
 def test_set_key_prefix():
     bm2 = Bitmapist(client, prefix='HELLO')
-    bm2.delete_all_events()
+    bm2.delete_all()
     bm2.mark_attribute('paid_user', 123)
     assert 'HELLO:at:paid_user' in \
         client.keys()
 
 
 def test_get_all_event_names():
-    bm.delete_all_events()
+    bm.delete_all()
 
     bm.mark_event('signed-up', 123)
     bm.mark_event('logged-on', 123)
@@ -320,7 +320,7 @@ def test_get_all_event_names():
 
 
 def test_get_all_attribute_names():
-    bm.delete_all_events()
+    bm.delete_all()
 
     bm.mark_attribute('sad', 123)
     bm.mark_attribute('happy', 123)

@@ -23,15 +23,19 @@ Examples
 
 Mark user 123 as active and mark some other events::
 
-    from bitmapist import mark_event
+    from bitmapist import Bitmapist
+    import redis
+    redis_client = redis.Redis('localhost')
 
-    mark_event('active', 123)
-    mark_event('song:add', 123)
-    mark_event('song:play', 123)
+    bm = Bitmapist(redis_client)
+    bm.mark_event('active', 123)
+    bm.mark_event('song:add', 123)
+    bm.mark_event('song:play', 123)
 
 Generate the form that makes it easy to query the bitmapist database::
 
-    html_form = bitmapist_cohort.render_html_form(
+    from bitmapist import cohort
+    html_form = cohort.render_html_form(
         action_url='/_Cohort',
         selections1=[ ('Are Active', 'active'), ],
         selections2=[ ('Played song', 'song:play'), ],
@@ -47,13 +51,12 @@ Generate the form that makes it easy to query the bitmapist database::
 
 Get the data and render it via HTML::
 
-    dates_data = bitmapist_cohort.get_dates_data(select1='active',
+    dates_data = cohort.Cohort(bm).get_dates_data(select1='active',
                                                  select2='song:play',
-                                                 time_group='days',
-                                                 system='default')
+                                                 time_group='days')
 
-    html_data = bitmapist_cohort.render_html_data(dates_data,
-                                                  time_group='days')
+    html_data = cohort.render_html_data(dates_data,
+                                        time_group='days')
 
     # All the arguments should come from the FORM element (html_form)
     # but to make things more clear I have filled them in directly
@@ -68,8 +71,6 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from mako.lookup import TemplateLookup
-
-from bitmapist import WeekEvents, DayEvents, MonthEvents, BitOpAnd
 
 
 #--- HTML rendering ----------------------------------------------
@@ -96,113 +97,109 @@ def render_html_form(action_url, selections1, selections2,
 
 
 def render_html_data(dates_data,
-                     as_precent=True, time_group='days'):
+                     as_percent=True, time_group='days'):
     """
     Render's data as HTML, inside a TABLE element.
 
     :param :dates_data The data that's returned by `get_dates_data`
-    :param :as_precent Should the data be shown as percents or as counts. Defaults to `True`
+    :param :as_percent Should the data be shown as percents or as counts. Defaults to `True`
     :param :time_group What is the data grouped by? Can be `days`, `weeks` or `months`
     """
     return get_lookup().get_template('table_data.mako').render(
         dates_data=dates_data,
-        as_precent=as_precent,
+        as_percent=as_percent,
         time_group=time_group
     )
 
 
 #--- Data rendering ----------------------------------------------
-def get_dates_data(select1, select2,
-                   time_group='days', system='default',
-                   as_precent=True):
-    """
-    Fetch the data from bitmapist.
 
-    :param :select1 First filter (could be `active`)
-    :param :select2 Second filter (could be `song:played`)
-    :param :time_group What is the data grouped by? Can be `days`, `weeks` or `months`
-    :param :system What bitmapist should be used?
-    :param :as_precent If `True` then percents as calculated and shown. Defaults to `True`
-    :return A list of day data, formated like `[[datetime, count], ...]`
-    """
-    # Days
-    if time_group == 'days':
-        fn_get_events = _day_events_fn
+class Cohort(object):
 
-        date_range = 25
-        now = datetime.utcnow() - timedelta(days=24)
-        timedelta_inc = lambda d: timedelta(days=d)
-    # Weeks
-    elif time_group == 'weeks':
-        fn_get_events = _weeks_events_fn
+    def __init__(self, bitmapist_client):
+        self.bitmapist_client = bitmapist_client
 
-        date_range = 12
-        now = datetime.utcnow() - relativedelta(weeks=11)
-        timedelta_inc = lambda w: relativedelta(weeks=w)
-    # Months
-    elif time_group == 'months':
-        fn_get_events = _month_events_fn
+    def get_dates_data(self, select1, select2,
+                       time_group='days',
+                       as_percent=True):
+        """
+        Fetch the data from bitmapist.
 
-        date_range = 6
-        now = datetime.utcnow() - relativedelta(months=5)
-        now -= timedelta(days=now.day-1)
-        timedelta_inc = lambda m: relativedelta(months=m)
+        :param :select1 First filter (could be `active`)
+        :param :select2 Second filter (could be `song:played`)
+        :param :time_group What is the data grouped by? Can be `days`, `weeks` or `months`
+        :param :as_percent If `True` then percents as calculated and shown. Defaults to `True`
+        :return A list of day data, formated like `[[datetime, count], ...]`
+        """
+        # Days
+        if time_group == 'days':
+            fn_get_events = self.bitmapist_client.get_day_event
 
-    dates = []
+            date_range = 25
+            now = datetime.utcnow() - timedelta(days=24)
+            timedelta_inc = lambda d: timedelta(days=d)
+        # Weeks
+        elif time_group == 'weeks':
+            fn_get_events = self.bitmapist_client.get_week_event
 
-    for i in range(0, date_range):
-        result = [now]
+            date_range = 12
+            now = datetime.utcnow() - relativedelta(weeks=11)
+            timedelta_inc = lambda w: relativedelta(weeks=w)
+        # Months
+        elif time_group == 'months':
+            fn_get_events = self.bitmapist_client.get_month_event
 
-        # Total count
-        day_events = fn_get_events(select1, now, system)
+            date_range = 6
+            now = datetime.utcnow() - relativedelta(months=5)
+            now -= timedelta(days=now.day - 1)
+            timedelta_inc = lambda m: relativedelta(months=m)
 
-        total_day_count = len(day_events)
-        result.append(total_day_count)
+        dates = []
 
-        # Daily count
-        for d_delta in range(0, 13):
-            if total_day_count == 0:
-                result.append( '' )
-                continue
+        for i in range(0, date_range):
+            result = [now]
 
-            delta_now = now + timedelta_inc(d_delta)
+            # Total count
+            day_events = fn_get_events(select1, now)
 
-            delta_events = fn_get_events(select2, delta_now, system)
+            total_day_count = len(day_events)
+            result.append(total_day_count)
 
-            if not delta_events.has_events_marked():
-                result.append('')
-                continue
+            # Daily count
+            for d_delta in range(0, 13):
+                if total_day_count == 0:
+                    result.append('')
+                    continue
 
-            day_set_op = BitOpAnd( day_events, delta_events )
+                delta_now = now + timedelta_inc(d_delta)
 
-            delta_count = len(day_set_op)
-            if delta_count == 0:
-                result.append(float(0.0))
-            else:
-                if as_precent:
-                    result.append( (float(delta_count) / float(total_day_count)) * 100 )
+                delta_events = fn_get_events(select2, delta_now)
+
+                if not delta_events.has_events_marked():
+                    result.append('')
+                    continue
+
+                day_set_op = self.bitmapist_client.bit_op_and(day_events, delta_events)
+
+                delta_count = len(day_set_op)
+                if delta_count == 0:
+                    result.append(float(0.0))
                 else:
-                    result.append( delta_count )
+                    if as_percent:
+                        result.append((float(delta_count) / float(total_day_count)) * 100)
+                    else:
+                        result.append(delta_count)
 
-        dates.append( result )
+            dates.append(result)
 
-        now = now + timedelta_inc(1)
+            now = now + timedelta_inc(1)
 
-    return dates
-
-
-#--- Private ----------------------------------------------
-def _day_events_fn(key, date, system):
-    return DayEvents(key, date.year, date.month, date.day, system=system)
-
-def _month_events_fn(key, date, system):
-    return MonthEvents(key, date.year, date.month, system=system)
-
-def _weeks_events_fn(key, date, system):
-    return WeekEvents(key, date.year, date.isocalendar()[1], system=system)
+        return dates
 
 
 _LOOKUP = None
+
+
 def get_lookup():
     global _LOOKUP
 

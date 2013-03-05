@@ -10,11 +10,11 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version='2.6.2',
+      version='2.6.3',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
-      install_requires=['redis>=2.7.2.1', 'mako'],
+      install_requires=['redis>=2.7.2.1', 'mako', 'python-dateutil>=2.1'],
       dependency_links=['https://github.com/yayalice/redis-py/tarball/master#egg=redis-2.7.2.1'],
       classifiers=[
         "Development Status :: 5 - Production/Stable",

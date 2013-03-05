@@ -80,7 +80,6 @@ Nest bit operations!::
 :license: BSD
 """
 
-import math
 import re
 
 from datetime import datetime
@@ -226,12 +225,30 @@ class Bitmapist(object):
                 attr_names.add(match.groups()[0])
         return attr_names
 
+    def delete_all(self):
+        """
+        Delete all bitmap keys from the database.
+        """
+        cli = self.redis_client
+        keys = cli.keys('%s%s*' % (self.prefix, self.divider))
+        if len(keys) > 0:
+            cli.delete(*keys)
+
     def delete_all_events(self):
         """
         Delete all events from the database.
         """
         cli = self.redis_client
-        keys = cli.keys('%s%s*' % (self.prefix, self.divider))
+        keys = cli.keys('%s%sev%s*' % (self.prefix, self.divider, self.divider))
+        if len(keys) > 0:
+            cli.delete(*keys)
+
+    def delete_all_attributes(self):
+        """
+        Delete all attributes from the database.
+        """
+        cli = self.redis_client
+        keys = cli.keys('%s%sat%s*' % (self.prefix, self.divider, self.divider))
         if len(keys) > 0:
             cli.delete(*keys)
 
