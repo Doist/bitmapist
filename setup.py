@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version='2.6.3',
+      version='2.6.4',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -63,6 +63,7 @@ Examples
 
 Setting things up::
 
+    import redis
     from datetime import datetime, timedelta
     from bitmapist import Bitmapist
 

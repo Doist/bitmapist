@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from bitmapist import Bitmapist, MixinCounts
 import redis
+import time
 
 client = redis.Redis('localhost')
 bm = Bitmapist(client)
@@ -49,7 +50,7 @@ def test_convert_end_bits_to_btye():
     assert counter._convert_to_end_byte(128) == 15
 
 
-def test_mark_with_diff_days():
+def test_mark_event_with_diff_days():
     bm.delete_all()
 
     bm.mark_event('active', 123)
@@ -82,6 +83,36 @@ def test_mark_with_diff_days():
     assert 124 not in bm.get_hour_event('active', now)
     assert 123 not in bm.get_hour_event('active', hour_ago)
     assert 124 not in bm.get_hour_event('active', hour_ago)
+
+
+def test_mark_event_with_expire():
+    bm.delete_all()
+    now = datetime.utcnow()
+    assert bm.get_month_event('active', now).get_count() == 0
+    bm.mark_event('active', 123, hour_ttl=1)
+    assert 123 in bm.get_hour_event('active', now)
+    assert 123 in bm.get_month_event('active', now)
+    time.sleep(0.5)
+    assert 123 in bm.get_hour_event('active', now)
+    assert 123 in bm.get_month_event('active', now)
+    time.sleep(0.5)
+    assert 123 not in bm.get_hour_event('active', now)
+    assert 123 in bm.get_month_event('active', now)
+
+
+def test_mark_event_with_expire_timedelta():
+    bm.delete_all()
+    now = datetime.utcnow()
+    assert bm.get_month_event('active', now).get_count() == 0
+    bm.mark_event('active', 123, hour_ttl=timedelta(seconds=1))
+    assert 123 in bm.get_hour_event('active', now)
+    assert 123 in bm.get_month_event('active', now)
+    time.sleep(0.5)
+    assert 123 in bm.get_hour_event('active', now)
+    assert 123 in bm.get_month_event('active', now)
+    time.sleep(0.5)
+    assert 123 not in bm.get_hour_event('active', now)
+    assert 123 in bm.get_month_event('active', now)
 
 
 def test_mark_counts():
@@ -221,6 +252,25 @@ def test_bit_operation_not():
     assert len(bm.bit_op_not(bm.get_attribute('paid_user'))) == 13
 
 
+def test_bit_operation_with_expiration():
+    # Given that temporary bitop keys are set to expire in 1 second
+    bm_expire = Bitmapist(client, temp_ttl=1)
+    bm_expire.delete_all()
+
+    # When a temporary bit op is created (this one with the NOT bitop)
+    bm_expire.mark_attribute('paid_user', 4)
+    non_paid = bm_expire.bit_op_not(bm_expire.get_attribute('paid_user'))
+
+    # It exists at first
+    assert 5 in non_paid
+
+    # But after 1 second, i.e. the TTL, has passed
+    time.sleep(1)
+
+    # Then the bitmap doesn't exist anymore
+    assert len(non_paid) == 0
+
+
 def test_events_marked():
     bm.delete_all()
 
@@ -299,6 +349,7 @@ def test_set_divider():
     bm2.mark_attribute('paiduser', 123)
     assert 'trackist_at_paiduser' in \
         client.keys()
+    bm.delete_all()
 
 
 def test_set_key_prefix():
@@ -307,6 +358,7 @@ def test_set_key_prefix():
     bm2.mark_attribute('paid_user', 123)
     assert 'HELLO:at:paid_user' in \
         client.keys()
+    bm.delete_all()
 
 
 def test_get_all_event_names():

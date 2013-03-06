@@ -87,10 +87,15 @@ from datetime import datetime
 
 class Bitmapist(object):
 
-    def __init__(self, redis_client, prefix='trackist', divider=':'):
+    def __init__(self, redis_client, prefix='trackist', divider=':', temp_ttl=None):
+        """
+        :param :temp_ttl Time to live for temporary bit op keys. Defaults to 60 seconds
+
+        """
         self.redis_client = redis_client
         self.prefix = prefix
         self.divider = divider
+        self.temp_ttl = temp_ttl or 60
 
     def get_month_event(self, event_name, now):
         return MonthEvents(event_name, now.year, now.month, self.prefix, self.divider, self.redis_client)
@@ -108,19 +113,20 @@ class Bitmapist(object):
         return Attributes(attribute_name, self.prefix, self.divider, self.redis_client)
 
     def bit_op_and(self, *bitmaps):
-        return BitOpAnd(self.prefix, self.divider, self.redis_client, *bitmaps)
+        return BitOpAnd(self.prefix, self.divider, self.redis_client, self.temp_ttl, *bitmaps)
 
     def bit_op_or(self, *bitmaps):
-        return BitOpOr(self.prefix, self.divider, self.redis_client, *bitmaps)
+        return BitOpOr(self.prefix, self.divider, self.redis_client, self.temp_ttl, *bitmaps)
 
     def bit_op_xor(self, *bitmaps):
-        return BitOpXor(self.prefix, self.divider, self.redis_client, *bitmaps)
+        return BitOpXor(self.prefix, self.divider, self.redis_client, self.temp_ttl, *bitmaps)
 
     def bit_op_not(self, bitmap):
-        return BitOpNot(self.prefix, self.divider, self.redis_client, bitmap)
+        return BitOpNot(self.prefix, self.divider, self.redis_client, self.temp_ttl, bitmap)
 
     #--- Events marking and deleting ----------------------------------------------
-    def mark_event(self, event_name, uuid, now=None, month=True, week=True, day=True, hour=True):
+    def mark_event(self, event_name, uuid, now=None, month=True, week=True, day=True, hour=True,
+            month_ttl=None, week_ttl=None, day_ttl=None, hour_ttl=None):
         """
         Marks an event for hours, days, weeks and months.
 
@@ -131,6 +137,10 @@ class Bitmapist(object):
         :param :week Whether the week granularity for the event should be saved
         :param :day Whether the day granularity for the event should be saved
         :param :hour Whether the hour granularity for the event should be saved
+        :param :month_ttl Time to live for the month key, in seconds or timedelta
+        :param :week_ttl Time to live for the week key, in seconds or timedelta
+        :param :day_ttl Time to live for the day key, in seconds or timedelta
+        :param :hour_ttl Time to live for the hour key, in seconds or timedelta
 
         Examples::
 
@@ -139,24 +149,29 @@ class Bitmapist(object):
 
             # Mark task completed for id 252
             bm.mark_event('tasks_completed', 252)
+
+            # Mark month and week key only for active user
+            bm.mark_event('active', 1, day=False, hour=False)
         """
         if not now:
             now = datetime.utcnow()
 
         stat_objs = []
         if month:
-            stat_objs.append(self.get_month_event(event_name, now))
+            stat_objs.append((self.get_month_event(event_name, now), month_ttl))
         if week:
-            stat_objs.append(self.get_week_event(event_name, now))
+            stat_objs.append((self.get_week_event(event_name, now), week_ttl))
         if day:
-            stat_objs.append(self.get_day_event(event_name, now))
+            stat_objs.append((self.get_day_event(event_name, now), day_ttl))
         if hour:
-            stat_objs.append(self.get_hour_event(event_name, now))
+            stat_objs.append((self.get_hour_event(event_name, now), hour_ttl))
 
         with self.redis_client.pipeline() as p:
             p.multi()
-            for obj in stat_objs:
+            for obj, ttl in stat_objs:
                 p.setbit(obj.redis_key, uuid, 1)
+                if ttl is not None:
+                    p.expire(obj.redis_key, ttl)
             p.execute()
 
     def mark_attribute_multi(self, attribute_name, uuids, mark_as=1):
@@ -470,7 +485,7 @@ class BitOperation(Bitmap):
 
     """
 
-    def __init__(self, op_name, prefix, divider, redis_client, *events):
+    def __init__(self, op_name, prefix, divider, redis_client, ttl, *events):
         event_redis_keys = [ev.redis_key for ev in events]
 
         self.redis_key = divider.join([
@@ -482,30 +497,31 @@ class BitOperation(Bitmap):
 
         self.redis_client = redis_client
         self.redis_client.bitop(op_name, self.redis_key, *event_redis_keys)
+        self.redis_client.expire(self.redis_key, ttl)
 
 
 class BitOpAnd(BitOperation):
 
-    def __init__(self, prefix, divider, redis_client, *events):
-        BitOperation.__init__(self, 'AND', prefix, divider, redis_client, *events)
+    def __init__(self, prefix, divider, redis_client, ttl, *events):
+        BitOperation.__init__(self, 'AND', prefix, divider, redis_client, ttl, *events)
 
 
 class BitOpNot(BitOperation):
 
-    def __init__(self, prefix, divider, redis_client, event):
-        BitOperation.__init__(self, 'Not', prefix, divider, redis_client, event)
+    def __init__(self, prefix, divider, redis_client, ttl, event):
+        BitOperation.__init__(self, 'Not', prefix, divider, redis_client, ttl, event)
 
 
 class BitOpOr(BitOperation):
 
-    def __init__(self, prefix, divider, redis_client, *events):
-        BitOperation.__init__(self, 'OR', prefix, divider, redis_client, *events)
+    def __init__(self, prefix, divider, redis_client, ttl, *events):
+        BitOperation.__init__(self, 'OR', prefix, divider, redis_client, ttl, *events)
 
 
 class BitOpXor(BitOperation):
 
-    def __init__(self, prefix, divider, redis_client, *events):
-        BitOperation.__init__(self, 'XOR', prefix, divider, redis_client, *events)
+    def __init__(self, prefix, divider, redis_client, ttl, *events):
+        BitOperation.__init__(self, 'XOR', prefix, divider, redis_client, ttl, *events)
 
 
 #--- Private ----------------------------------------------
