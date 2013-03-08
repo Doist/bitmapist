@@ -146,9 +146,11 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
     if not now:
         now = datetime.utcnow()
 
+    iso_date = now.isocalendar()
+
     stat_objs = (
         MonthEvents(event_name, now.year, now.month),
-        WeekEvents(event_name, now.year, now.isocalendar()[1]),
+        WeekEvents(event_name, iso_date[0], iso_date[1]),
         DayEvents(event_name, now.year, now.month, now.day),
         HourEvents(event_name, now.year, now.month, now.day, now.hour) if track_hourly else None
     )
