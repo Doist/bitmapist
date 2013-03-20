@@ -106,6 +106,7 @@ def test_bit_operations():
     assert active_2_months.get_count() == 1
     assert 123 in active_2_months
     assert 224 not in active_2_months
+    active_2_months.delete()
 
     # Try out with bit OR operation
     assert BitOpOr(
@@ -121,6 +122,7 @@ def test_bit_operations():
     )
     assert active_2_months.get_count() == 1
     assert active_2_months.system == 'default_copy'
+    active_2_months.delete()
 
     # Try nested operations
     active_2_months = BitOpAnd(
@@ -133,6 +135,7 @@ def test_bit_operations():
 
     assert 123 in active_2_months
     assert 224 not in active_2_months
+    active_2_months.delete()
 
 
 def test_events_marked():

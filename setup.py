@@ -10,7 +10,7 @@ import os
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '2.31',
+      version = '2.4',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
@@ -113,6 +113,9 @@ Work with nested bit operations (imagine what you can do with this ;-))::
     )
     print len(active_2_months)
     assert 123 in active_2_months
+
+    # Delete the temporary AND operation
+    active_2_months.delete()
 
 As something new tracking hourly is disabled (to save memory!) To enable it as default do::
 

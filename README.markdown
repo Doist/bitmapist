@@ -105,6 +105,9 @@ active_2_months = BitOpAnd(
 )
 print len(active_2_months)
 assert 123 in active_2_months
+
+# Delete the temporary AND operation
+active_2_months.delete()
 ```
 
 As something new tracking hourly is disabled (to save memory!) To enable it as default do::

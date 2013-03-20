@@ -184,15 +184,22 @@ def delete_temporary_bitop_keys(system='default'):
 
 
 #--- Events ----------------------------------------------
-class MixinEventsMarked:
+class MixinEventsMisc:
     """
     Extends with an obj.has_events_marked()
     that returns `True` if there are any events marked,
     otherwise `False` is returned.
+
+    Extens also with a obj.delete()
+    (useful for deleting temporary calculations).
     """
     def has_events_marked(self):
         cli = get_redis(self.system)
         return cli.get(self.redis_key) != None
+
+    def delete(self):
+        cli = get_redis(self.system)
+        cli.delete(self.redis_key)
 
 
 class MixinCounts:
@@ -225,7 +232,7 @@ class MixinContains:
             return False
 
 
-class MonthEvents(MixinCounts, MixinContains, MixinEventsMarked):
+class MonthEvents(MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a month.
 
@@ -239,7 +246,7 @@ class MonthEvents(MixinCounts, MixinContains, MixinEventsMarked):
                                      '%s-%s' % (year, month))
 
 
-class WeekEvents(MixinCounts, MixinContains, MixinEventsMarked):
+class WeekEvents(MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a week.
 
@@ -252,7 +259,7 @@ class WeekEvents(MixinCounts, MixinContains, MixinEventsMarked):
         self.redis_key = _prefix_key(event_name, 'W%s-%s' % (year, week))
 
 
-class DayEvents(MixinCounts, MixinContains, MixinEventsMarked):
+class DayEvents(MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a day.
 
@@ -266,7 +273,7 @@ class DayEvents(MixinCounts, MixinContains, MixinEventsMarked):
                                      '%s-%s-%s' % (year, month, day))
 
 
-class HourEvents(MixinCounts, MixinContains, MixinEventsMarked):
+class HourEvents(MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a hour.
 
@@ -327,17 +334,17 @@ class BitOperation:
         cli.bitop(op_name, self.redis_key, *event_redis_keys)
 
 
-class BitOpAnd(BitOperation, MixinContains, MixinCounts):
+class BitOpAnd(BitOperation, MixinContains, MixinCounts, MixinEventsMisc):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'AND', system_or_event, *events)
 
-class BitOpOr(BitOperation, MixinContains, MixinCounts):
+class BitOpOr(BitOperation, MixinContains, MixinCounts, MixinEventsMisc):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'OR', system_or_event, *events)
 
-class BitOpXor(BitOperation, MixinContains, MixinCounts):
+class BitOpXor(BitOperation, MixinContains, MixinCounts, MixinEventsMisc):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'XOR', system_or_event, *events)
