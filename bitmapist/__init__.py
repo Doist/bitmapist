@@ -155,12 +155,11 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
         HourEvents(event_name, now.year, now.month, now.day, now.hour) if track_hourly else None
     )
 
-    with get_redis(system).pipeline() as p:
-        p.multi()
-        for obj in stat_objs:
-            if obj != None:
-                p.setbit(obj.redis_key, uuid, 1)
-        p.execute()
+    p = get_redis(system).pipeline()
+    for obj in stat_objs:
+        if obj is not None:
+            p.setbit(obj.redis_key, uuid, 1)
+    p.execute()
 
 
 def delete_all_events(system='default'):
