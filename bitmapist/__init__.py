@@ -79,7 +79,6 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 :developer: Amir Salihefendic ( http://amix.dk )
 :license: BSD
 """
-import types
 import redis
 
 from datetime import datetime
