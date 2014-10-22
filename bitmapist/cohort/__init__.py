@@ -69,84 +69,122 @@ from dateutil.relativedelta import relativedelta
 
 from mako.lookup import TemplateLookup
 
-from bitmapist import WeekEvents, DayEvents, MonthEvents, BitOpAnd
+from bitmapist import WeekEvents, DayEvents, MonthEvents, YearEvents,\
+                      BitOpAnd
 
 
 #--- HTML rendering ----------------------------------------------
 def render_html_form(action_url, selections1, selections2,
-                     time_group='days', select1=None, select2=None):
+                     time_group='days',
+                     select1=None, select2=None, select3=None,
+                     as_precent=1, num_results=25):
     """
     Render a HTML form that can be used to query the data in bitmapist.
 
     :param :action_url The action URL of the <form> element. The form will always to a GET request.
     :param :selections1 A list of selections that the user can filter by, example `[ ('Are Active', 'active'), ]`
     :param :selections2 A list of selections that the user can filter by, example `[ ('Played song', 'song:play'), ]`
-    :param :time_group What data should be clustred by, can be `days`, `weeks` or `months`
+    :param :time_group What data should be clustred by, can be `days`, `weeks`, `months`, `years`
     :param :select1 What is the current selected filter (first)
     :param :select2 What is the current selected filter (second)
+    :param :select3 What is the current selected filter (third, optional)
     """
+    selections3 = [ ('------', '') ]
+    selections3.extend(selections2)
+
     return get_lookup().get_template('form_data.mako').render(
             selections1=selections1,
             selections2=selections2,
+            selections3=selections3,
             time_group=time_group,
             select1=select1,
             select2=select2,
-            action_url=action_url
+            select3=select3,
+            action_url=action_url,
+            as_precent=as_precent,
+            num_results=int(num_results)
     )
 
 
 def render_html_data(dates_data,
-                     as_precent=True, time_group='days'):
+                     as_precent=True, time_group='days',
+                     num_results=25):
     """
     Render's data as HTML, inside a TABLE element.
 
     :param :dates_data The data that's returned by `get_dates_data`
     :param :as_precent Should the data be shown as percents or as counts. Defaults to `True`
-    :param :time_group What is the data grouped by? Can be `days`, `weeks` or `months`
+    :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     """
     return get_lookup().get_template('table_data.mako').render(
         dates_data=dates_data,
         as_precent=as_precent,
-        time_group=time_group
+        time_group=time_group,
+        num_results=num_results
+    )
+
+def render_csv_data(dates_data,
+                    as_precent=True, time_group='days',
+                    num_results=25):
+    """
+    Render's data as CSV.
+    """
+    return get_lookup().get_template('table_data_csv.mako').render(
+        dates_data=dates_data,
+        as_precent=as_precent,
+        time_group=time_group,
+        num_results=num_results
     )
 
 
 #--- Data rendering ----------------------------------------------
-def get_dates_data(select1, select2,
+def get_dates_data(select1, select2, select3,
                    time_group='days', system='default',
-                   as_precent=True):
+                   as_precent=1, num_results=25):
     """
     Fetch the data from bitmapist.
 
     :param :select1 First filter (could be `active`)
     :param :select2 Second filter (could be `song:played`)
-    :param :time_group What is the data grouped by? Can be `days`, `weeks` or `months`
+    :param :select3 Second filter (could be `song:played`, optional)
+    :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     :param :system What bitmapist should be used?
     :param :as_precent If `True` then percents as calculated and shown. Defaults to `True`
     :return A list of day data, formated like `[[datetime, count], ...]`
     """
+    num_results = int(num_results)
+
     # Days
     if time_group == 'days':
         fn_get_events = _day_events_fn
 
-        date_range = 25
-        now = datetime.utcnow() - timedelta(days=24)
+        date_range = num_results
+        now = datetime.utcnow() - timedelta(days=num_results-1)
         timedelta_inc = lambda d: timedelta(days=d)
     # Weeks
     elif time_group == 'weeks':
         fn_get_events = _weeks_events_fn
 
-        date_range = 12
-        now = datetime.utcnow() - relativedelta(weeks=11)
+        date_range = num_results
+        now = datetime.utcnow() - relativedelta(weeks=num_results-1)
         timedelta_inc = lambda w: relativedelta(weeks=w)
     # Months
     elif time_group == 'months':
         fn_get_events = _month_events_fn
 
-        date_range = 6
-        now = datetime.utcnow() - relativedelta(months=5)
+        date_range = num_results
+        now = datetime.utcnow() - relativedelta(months=num_results-1)
         now -= timedelta(days=now.day-1)
         timedelta_inc = lambda m: relativedelta(months=m)
+    # Years
+    elif time_group == 'years':
+        fn_get_events = _year_events_fn
+
+        num_results = 3
+
+        date_range = num_results
+        now = datetime.utcnow() - relativedelta(years=num_results-1)
+        timedelta_inc = lambda m: relativedelta(years=m)
 
     dates = []
 
@@ -167,15 +205,31 @@ def get_dates_data(select1, select2,
 
             delta_now = now + timedelta_inc(d_delta)
 
-            delta_events = fn_get_events(select2, delta_now, system)
+            delta2_events = fn_get_events(select2, delta_now, system)
 
-            if not delta_events.has_events_marked():
+            if not delta2_events.has_events_marked():
                 result.append('')
                 continue
 
-            day_set_op = BitOpAnd(system, day_events, delta_events)
+            delta2_set_op = BitOpAnd(system, day_events, delta2_events)
 
-            delta_count = len(day_set_op)
+            if not select3:
+                delta_count = len(delta2_set_op)
+                delta2_set_op.delete()
+            else:
+                delta3_events = fn_get_events(select3, delta_now, system)
+
+                if not delta3_events.has_events_marked():
+                    result.append('')
+                    continue
+
+                delta3_set_op = BitOpAnd(system, delta2_set_op, delta3_events)
+                delta_count = len(delta3_set_op)
+
+                delta3_set_op.delete()
+                delta2_set_op.delete()
+
+            # Append to result
             if delta_count == 0:
                 result.append(float(0.0))
             else:
@@ -191,15 +245,46 @@ def get_dates_data(select1, select2,
     return dates
 
 
-#--- Private ----------------------------------------------
-def _day_events_fn(key, date, system):
-    return DayEvents(key, date.year, date.month, date.day, system=system)
+#--- Custom handlers ----------------------------------------------
+CUSTOM_HANDLERS = {}
+def set_custom_handler(event_name, callback):
+    """
+    Set a custom handelr for `event_name`.
+    This makes it possible to consturct event names that are complex
+    (for example looking at active & (web | ios)).
 
-def _month_events_fn(key, date, system):
-    return MonthEvents(key, date.year, date.month, system=system)
+    The signature of `callback` is callback(key, cls, cls_args)
+    Where cls is DayEvents, WeekEvents, MonthEvents or YearEvents.
+    """
+    CUSTOM_HANDLERS[event_name] = callback
+
+
+#--- Private ----------------------------------------------
+def _dispatch(key, cls, cls_args):
+    if key in CUSTOM_HANDLERS:
+        return CUSTOM_HANDLERS[key](key, cls, cls_args)
+    else:
+        return cls(key, *cls_args)
+
+def _day_events_fn(key, date, system):
+    cls = DayEvents
+    cls_args = (date.year, date.month, date.day, system)
+    return _dispatch(key, cls, cls_args)
 
 def _weeks_events_fn(key, date, system):
-    return WeekEvents(key, date.year, date.isocalendar()[1], system=system)
+    cls = WeekEvents
+    cls_args = (date.year, date.isocalendar()[1], system)
+    return _dispatch(key, cls, cls_args)
+
+def _month_events_fn(key, date, system):
+    cls = MonthEvents
+    cls_args = (date.year, date.month, system)
+    return _dispatch(key, cls, cls_args)
+
+def _year_events_fn(key, date, system):
+    cls = YearEvents
+    cls_args = (date.year, system)
+    return _dispatch(key, cls, cls_args)
 
 
 _LOOKUP = None

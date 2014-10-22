@@ -18,6 +18,8 @@
     border-bottom: 1px solid #aaa;
 }
 
+
+
 .cohort_table .date {
     display: inline-block;
     width: 125px;
@@ -50,6 +52,8 @@
                         ${ row_data[0].strftime('%d %b') }
                     %elif time_group == 'weeks':
                         ${ row_data[0].strftime('Week %U, %d %b') }
+                    %elif time_group == 'years':
+                        ${ row_data[0].strftime('%Y') }
                     %else:
                         ${ row_data[0].strftime('%d %b, %Y') }
                     %endif
@@ -84,11 +88,8 @@
         </tr>
     %endfor
 
-    %if time_group != 'days':
     <tr>
-
         <td class="avg_row"></td>
-
         %for i in range(2, 15):
             <%
                 cnts = 0
@@ -114,5 +115,8 @@
             </td>
         %endfor
     </tr>
-    %endif
 </table>
+
+<div style="padding-top: 20px;">
+    <a href="#" target="_blank" onclick="window.open(location.href + '&export_csv=1'); return false;">Export as CSV</a>
+</div>
