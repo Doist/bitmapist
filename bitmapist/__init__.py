@@ -6,7 +6,7 @@ Implements a powerful analytics library on top of Redis's support for bitmaps an
 
 This library makes it possible to implement real-time, highly scalable analytics that can answer following questions:
 
-* Has user 123 been online today? This week? This month?
+* Has user 123 been online today? This week? This month? This year?
 * Has user 123 performed action "X"?
 * How many users have been active have this month? This hour?
 * How many unique users have performed action "X" this week?
@@ -260,6 +260,24 @@ class MixinContains:
             return False
 
 
+class YearEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
+    """
+    Events for a year.
+
+    Example::
+
+        YearEvents('active', 2012)
+    """
+    def __init__(self, event_name, year, system='default'):
+        self.system = system
+
+        months = []
+        for m in xrange(1, 13):
+            months.append( MonthEvents(event_name, year, m, system) )
+        or_op = BitOpOr(*months)
+        self.redis_key = or_op.redis_key
+
+
 class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a month.
@@ -376,6 +394,11 @@ class BitOpXor(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsM
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'XOR', system_or_event, *events)
+
+class BitOpNot(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
+
+    def __init__(self, system_or_event, *events):
+        BitOperation.__init__(self, 'NOT', system_or_event, *events)
 
 
 #--- Private ----------------------------------------------
