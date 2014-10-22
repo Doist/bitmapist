@@ -5,12 +5,10 @@
 # the Free Software Foundation, either version 3 of the License, or (at
 # your option) any later version.
 
-import os
-
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '2.4',
+      version = '3.0',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
