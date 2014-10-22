@@ -9,6 +9,7 @@ This Python library makes it possible to implement real-time, highly scalable an
 * How many unique users have performed action "X" this week?
 * How many % of users that were active last week are still active?
 * How many % of users that were active last month are still active this month?
+* What users performed action "X"?
 
 This library is very easy to use and enables you to create your own reports easily.
 
@@ -78,6 +79,12 @@ How many users have been active this week?:
 
 ```python
 print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+```
+
+Get the list of these users (user ids):
+
+```python
+print list(WeekEvents('active', now.year, now.isocalendar()[1]))
 ```
 
 Perform bit operations. How many users that have been active last month are still active this month?

@@ -49,6 +49,21 @@ def test_mark_counts():
     assert len(MonthEvents('active', now.year, now.month)) == 2
 
 
+def test_mark_iter():
+    delete_all_events()
+    now = datetime.utcnow()
+    ev = MonthEvents('active', now.year, now.month)
+
+    assert list(ev) == []
+
+    mark_event('active', 5)
+    mark_event('active', 55)
+    mark_event('active', 555)
+    mark_event('active', 5555)
+
+    assert list(ev) == [5, 55, 555, 5555]
+
+
 def test_different_dates():
     delete_all_events()
 

@@ -183,6 +183,35 @@ def delete_temporary_bitop_keys(system='default'):
 
 
 #--- Events ----------------------------------------------
+class MixinIter:
+    """
+    Extends with an obj.get_uuids() returning the iterator of uuids in a key
+    (unpacks the key)
+    """
+    def get_uuids(self):
+        cli = get_redis(self.system)
+        val = cli.get(self.redis_key)
+        if val is None:
+            return
+
+        zero = chr(0)
+        for char_num, char in enumerate(val):
+            # shortcut
+            if char == zero:
+                continue
+            # find set bits, generate smth like [1, 0, ...]
+            bits = [(ord(char) >> i) & 1 for i in xrange(7, -1, -1)]
+            # list of positions with ones
+            set_bits = list(pos for pos, val in enumerate(bits) if val)
+            # yield everything we need
+            for bit in set_bits:
+                yield char_num * 8 + bit
+
+    def __iter__(self):
+        for item in self.get_uuids():
+            yield item
+
+
 class MixinEventsMisc:
     """
     Extends with an obj.has_events_marked()
@@ -231,7 +260,7 @@ class MixinContains:
             return False
 
 
-class MonthEvents(MixinCounts, MixinContains, MixinEventsMisc):
+class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a month.
 
@@ -245,7 +274,7 @@ class MonthEvents(MixinCounts, MixinContains, MixinEventsMisc):
                                      '%s-%s' % (year, month))
 
 
-class WeekEvents(MixinCounts, MixinContains, MixinEventsMisc):
+class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a week.
 
@@ -258,7 +287,7 @@ class WeekEvents(MixinCounts, MixinContains, MixinEventsMisc):
         self.redis_key = _prefix_key(event_name, 'W%s-%s' % (year, week))
 
 
-class DayEvents(MixinCounts, MixinContains, MixinEventsMisc):
+class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a day.
 
@@ -272,7 +301,7 @@ class DayEvents(MixinCounts, MixinContains, MixinEventsMisc):
                                      '%s-%s-%s' % (year, month, day))
 
 
-class HourEvents(MixinCounts, MixinContains, MixinEventsMisc):
+class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
     Events for a hour.
 
@@ -333,17 +362,17 @@ class BitOperation:
         cli.bitop(op_name, self.redis_key, *event_redis_keys)
 
 
-class BitOpAnd(BitOperation, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpAnd(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'AND', system_or_event, *events)
 
-class BitOpOr(BitOperation, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpOr(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'OR', system_or_event, *events)
 
-class BitOpXor(BitOperation, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpXor(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'XOR', system_or_event, *events)
