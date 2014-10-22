@@ -7,8 +7,8 @@ from bitmapist import setup_redis, delete_all_events, mark_event,\
 
 
 def setup_module():
-    setup_redis('default', 'localhost', 6380)
-    setup_redis('default_copy', 'localhost', 6380)
+    setup_redis('default', 'localhost', 6399)
+    setup_redis('default_copy', 'localhost', 6399)
 
 
 def test_mark_with_diff_days():
