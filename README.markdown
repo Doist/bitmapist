@@ -93,6 +93,14 @@ MonthEvents('active') == MonthEvents('active', now.year, now.month)
 
 ```
 
+Additionally, for the sake of uniformity, you can create an event from
+any datetime object with a `from_date` static method.
+
+```python
+
+MonthEvents('active').from_date(now) == MonthEvents('active', now.year, now.month)
+
+```
 
 Get the list of these users (user ids):
 

@@ -145,19 +145,13 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
     if not now:
         now = datetime.utcnow()
 
-    iso_date = now.isocalendar()
-
-    stat_objs = (
-        MonthEvents(event_name, now.year, now.month),
-        WeekEvents(event_name, iso_date[0], iso_date[1]),
-        DayEvents(event_name, now.year, now.month, now.day),
-        HourEvents(event_name, now.year, now.month, now.day, now.hour) if track_hourly else None
-    )
+    obj_classes = [MonthEvents, WeekEvents, DayEvents]
+    if track_hourly:
+        obj_classes.append(HourEvents)
 
     p = get_redis(system).pipeline()
-    for obj in stat_objs:
-        if obj is not None:
-            p.setbit(obj.redis_key, uuid, 1)
+    for obj_class in obj_classes:
+        p.setbit(obj_class.from_date(event_name, now).redis_key, uuid, 1)
     p.execute()
 
 
@@ -281,6 +275,11 @@ class YearEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         YearEvents('active', 2012)
     """
+    @classmethod
+    def from_date(cls, event_name, dt=None, system='default'):
+        dt = dt or datetime.utcnow()
+        return cls(event_name, dt.year, system=system)
+
     def __init__(self, event_name, year=None, system='default'):
         now = datetime.utcnow()
         self.event_name = event_name
@@ -305,6 +304,11 @@ class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         MonthEvents('active', 2012, 10)
     """
+    @classmethod
+    def from_date(cls, event_name, dt=None, system='default'):
+        dt = dt or datetime.utcnow()
+        return cls(event_name, dt.year, dt.month, system=system)
+
     def __init__(self, event_name, year=None, month=None, system='default'):
         now = datetime.utcnow()
         self.event_name = event_name
@@ -327,6 +331,12 @@ class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         WeekEvents('active', 2012, 48)
     """
+    @classmethod
+    def from_date(cls, event_name, dt=None, system='default'):
+        dt = dt or datetime.utcnow()
+        dt_year, dt_week, _ = dt.isocalendar()
+        return cls(event_name, dt_year, dt_week, system=system)
+
     def __init__(self, event_name, year=None, week=None, system='default'):
         now = datetime.utcnow()
         now_year, now_week, _ = now.isocalendar()
@@ -350,6 +360,11 @@ class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         DayEvents('active', 2012, 10, 23)
     """
+    @classmethod
+    def from_date(cls, event_name, dt=None, system='default'):
+        dt = dt or datetime.utcnow()
+        return cls(event_name, dt.year, dt.month, dt.day, system=system)
+
     def __init__(self, event_name, year=None, month=None, day=None, system='default'):
         now = datetime.utcnow()
         self.event_name = event_name
@@ -373,6 +388,11 @@ class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         HourEvents('active', 2012, 10, 23, 13)
     """
+    @classmethod
+    def from_date(cls, event_name, dt=None, system='default'):
+        dt = dt or datetime.utcnow()
+        return cls(event_name, dt.year, dt.month, dt.day, dt.hour, system=system)
+
     def __init__(self, event_name, year=None, month=None, day=None, hour=None, system='default'):
         now = datetime.utcnow()
         self.event_name = event_name
