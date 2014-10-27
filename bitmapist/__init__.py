@@ -81,7 +81,7 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 """
 import redis
 
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 
 #--- Systems related ----------------------------------------------
@@ -228,6 +228,20 @@ class MixinEventsMisc:
         cli = get_redis(self.system)
         cli.delete(self.redis_key)
 
+    def next(self):
+        """ next object in a datetime line """
+        return self.delta(value=1)
+
+    def prev(self):
+        """ prev object in a datetime line """
+        return self.delta(value=-1)
+
+    def __eq__(self, other):
+        other_key = getattr(other, 'redis_key', None)
+        if other_key is None:
+            return NotImplemented
+        return self.redis_key == other_key
+
 
 class MixinCounts:
     """
@@ -267,14 +281,20 @@ class YearEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         YearEvents('active', 2012)
     """
-    def __init__(self, event_name, year, system='default'):
+    def __init__(self, event_name, year=None, system='default'):
+        now = datetime.utcnow()
+        self.event_name = event_name
+        self.year = not_none(year, now.year)
         self.system = system
 
         months = []
         for m in xrange(1, 13):
-            months.append( MonthEvents(event_name, year, m, system) )
+            months.append( MonthEvents(event_name, self.year, m, system) )
         or_op = BitOpOr(*months)
         self.redis_key = or_op.redis_key
+
+    def delta(self, value):
+        return self.__class__(self.event_name, self.year + value, self.system)
 
 
 class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
@@ -285,10 +305,18 @@ class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         MonthEvents('active', 2012, 10)
     """
-    def __init__(self, event_name, year, month, system='default'):
+    def __init__(self, event_name, year=None, month=None, system='default'):
+        now = datetime.utcnow()
+        self.event_name = event_name
+        self.year = not_none(year, now.year)
+        self.month = not_none(month, now.month)
         self.system = system
         self.redis_key = _prefix_key(event_name,
-                                     '%s-%s' % (year, month))
+                                     '%s-%s' % (self.year, self.month))
+
+    def delta(self, value):
+        year, month = add_month(self.year, self.month, value)
+        return self.__class__(self.event_name, year, month, self.system)
 
 
 class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
@@ -299,9 +327,19 @@ class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         WeekEvents('active', 2012, 48)
     """
-    def __init__(self, event_name, year, week, system='default'):
+    def __init__(self, event_name, year=None, week=None, system='default'):
+        now = datetime.utcnow()
+        now_year, now_week, _ = now.isocalendar()
+        self.event_name = event_name
+        self.year = not_none(year, now_year)
+        self.week = not_none(week, now_week)
         self.system = system
-        self.redis_key = _prefix_key(event_name, 'W%s-%s' % (year, week))
+        self.redis_key = _prefix_key(event_name, 'W%s-%s' % (self.year, self.week))
+
+    def delta(self, value):
+        dt = iso_to_gregorian(self.year, self.week + value, 1)
+        year, week, _ = dt.isocalendar()
+        return self.__class__(self.event_name, year, week, self.system)
 
 
 class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
@@ -312,10 +350,19 @@ class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         DayEvents('active', 2012, 10, 23)
     """
-    def __init__(self, event_name, year, month, day, system='default'):
+    def __init__(self, event_name, year=None, month=None, day=None, system='default'):
+        now = datetime.utcnow()
+        self.event_name = event_name
+        self.year = not_none(year, now.year)
+        self.month = not_none(month, now.month)
+        self.day = not_none(day, now.day)
         self.system = system
         self.redis_key = _prefix_key(event_name,
-                                     '%s-%s-%s' % (year, month, day))
+                                     '%s-%s-%s' % (self.year, self.month, self.day))
+
+    def delta(self, value):
+        dt = date(self.year, self.month, self.day) + timedelta(days=value)
+        return self.__class__(self.event_name, dt.year, dt.month, dt.day, self.system)
 
 
 class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
@@ -326,11 +373,22 @@ class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
         HourEvents('active', 2012, 10, 23, 13)
     """
-    def __init__(self, event_name, year, month, day, hour, system='default'):
+    def __init__(self, event_name, year=None, month=None, day=None, hour=None, system='default'):
+        now = datetime.utcnow()
+        self.event_name = event_name
+        self.year = not_none(year, now.year)
+        self.month = not_none(month, now.month)
+        self.day = not_none(day, now.day)
+        self.hour = not_none(hour, now.hour)
         self.system = system
         self.redis_key = _prefix_key(event_name,
                                      '%s-%s-%s-%s' %\
-                                         (year, month, day, hour))
+                                         (self.year, self.month, self.day, self.hour))
+
+
+    def delta(self, value):
+        dt = datetime(self.year, self.month, self.day, self.hour) + timedelta(hours=value)
+        return self.__class__(self.event_name, dt.year, dt.month, dt.day, dt.hour, self.system)
 
 
 #--- Bit operations ----------------------------------------------
@@ -403,3 +461,39 @@ class BitOpNot(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsM
 #--- Private ----------------------------------------------
 def _prefix_key(event_name, date):
     return 'trackist_%s_%s' % (event_name, date)
+
+#--- Helper functions ---------------------------------------
+
+
+def add_month(year, month, delta):
+    """
+    Helper function which adds `delta` months to current `(year, month)` tuple
+    and returns a new valid tuple `(year, month)`
+    """
+    year, month = divmod(year * 12 + month + delta, 12)
+    if month == 0:
+        month = 12
+        year = year -1
+    return year, month
+
+
+def not_none(*keys):
+    """
+    Helper function returning first value which is not None
+    """
+    for key in keys:
+        if key is not None:
+            return key
+
+
+def iso_year_start(iso_year):
+    "The gregorian calendar date of the first day of the given ISO year"
+    fourth_jan = date(iso_year, 1, 4)
+    delta = timedelta(fourth_jan.isoweekday()-1)
+    return fourth_jan - delta
+
+
+def iso_to_gregorian(iso_year, iso_week, iso_day):
+    "Gregorian calendar date for the given ISO year, week and day"
+    year_start = iso_year_start(iso_year)
+    return year_start + timedelta(days=iso_day-1, weeks=iso_week-1)

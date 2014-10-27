@@ -75,11 +75,24 @@ assert 123 in MonthEvents('song:played', now.year, now.month)
 assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 ```
 
+
 How many users have been active this week?:
 
 ```python
 print len(WeekEvents('active', now.year, now.isocalendar()[1]))
 ```
+
+If you're interested in "current events", you can omit extra `now.whatever`
+arguments. Events will be populated with current time automatically.
+
+For example, these two calls are equivalent:
+
+```python
+
+MonthEvents('active') == MonthEvents('active', now.year, now.month)
+
+```
+
 
 Get the list of these users (user ids):
 
@@ -115,6 +128,21 @@ assert 123 in active_2_months
 
 # Delete the temporary AND operation
 active_2_months.delete()
+```
+
+There are special methods `prev` and `next` returning "sibling" events and
+allowing you to walk through events in time without any sophisticated
+iterators. A `delta` method allows you to "jump" forward or backward for
+more than one step. Uniform API allows you to use all types of base events
+(from hour to year) with the same code.
+
+```python
+
+current_month = MonthEvents()
+prev_month = current_month.prev()
+next_month = current_month.next()
+year_ago = current_month.delta(-12)
+
 ```
 
 As something new tracking hourly is disabled (to save memory!) To enable it as default do::
