@@ -1,19 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
-from bitmapist import setup_redis, delete_all_events, mark_event,\
+from bitmapist import mark_event,\
                       MonthEvents, WeekEvents, DayEvents, HourEvents,\
                       BitOpAnd, BitOpOr
 
 
-def setup_module():
-    setup_redis('default', 'localhost', 6399)
-    setup_redis('default_copy', 'localhost', 6399)
-
-
 def test_mark_with_diff_days():
-    delete_all_events()
-
     mark_event('active', 123, track_hourly=True)
 
     now = datetime.utcnow()
@@ -37,8 +30,6 @@ def test_mark_with_diff_days():
 
 
 def test_mark_counts():
-    delete_all_events()
-
     now = datetime.utcnow()
 
     assert MonthEvents('active', now.year, now.month).get_count() == 0
@@ -50,7 +41,6 @@ def test_mark_counts():
 
 
 def test_mark_iter():
-    delete_all_events()
     now = datetime.utcnow()
     ev = MonthEvents('active', now.year, now.month)
 
@@ -65,8 +55,6 @@ def test_mark_iter():
 
 
 def test_different_dates():
-    delete_all_events()
-
     now = datetime.utcnow()
     yesterday = now - timedelta(days=1)
 
@@ -85,8 +73,6 @@ def test_different_dates():
 
 
 def test_different_buckets():
-    delete_all_events()
-
     now = datetime.utcnow()
 
     mark_event('active', 123)
@@ -97,8 +83,6 @@ def test_different_buckets():
 
 
 def test_bit_operations():
-    delete_all_events()
-
     now = datetime.utcnow()
     last_month = datetime.utcnow() - timedelta(days=30)
 
@@ -154,8 +138,6 @@ def test_bit_operations():
 
 
 def test_events_marked():
-    delete_all_events()
-
     now = datetime.utcnow()
 
     assert MonthEvents('active', now.year, now.month).get_count() == 0

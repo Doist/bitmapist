@@ -4,6 +4,7 @@ import subprocess
 import atexit
 import socket
 import time
+from bitmapist import setup_redis, delete_all_events
 
 
 @pytest.yield_fixture(scope='session', autouse=True)
@@ -20,6 +21,17 @@ def redis_server():
         wait_for_socket(redis_host, redis_port)
         yield proc
         proc.terminate()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def setup_redis_for_bitmapist():
+    setup_redis('default', 'localhost', 6399)
+    setup_redis('default_copy', 'localhost', 6399)
+
+
+@pytest.fixture(autouse=True)
+def clean_redis():
+    delete_all_events()
 
 
 def start_redis_server(port):
