@@ -80,7 +80,7 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 :license: BSD
 """
 import redis
-
+import calendar
 from datetime import datetime, date, timedelta
 
 
@@ -295,6 +295,12 @@ class YearEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     def delta(self, value):
         return self.__class__(self.event_name, self.year + value, self.system)
 
+    def period_start(self):
+        return datetime(self.year, 1, 1)
+
+    def period_end(self):
+        return datetime(self.year, 12, 31, 23, 59, 59, 999999)
+
 
 class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
@@ -321,6 +327,13 @@ class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     def delta(self, value):
         year, month = add_month(self.year, self.month, value)
         return self.__class__(self.event_name, year, month, self.system)
+
+    def period_start(self):
+        return datetime(self.year, self.month, 1)
+
+    def period_end(self):
+        _, day = calendar.monthrange(self.year, self.month)
+        return datetime(self.year, self.month, day, 23, 59, 59, 999999)
 
 
 class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
@@ -351,6 +364,14 @@ class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
         year, week, _ = dt.isocalendar()
         return self.__class__(self.event_name, year, week, self.system)
 
+    def period_start(self):
+        s = iso_to_gregorian(self.year, self.week, 1)  # mon
+        return datetime(s.year, s.month, s.day)
+
+    def period_end(self):
+        e = iso_to_gregorian(self.year, self.week, 7)  # mon
+        return datetime(e.year, e.month, e.day, 23, 59, 59, 999999)
+
 
 class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
@@ -379,6 +400,12 @@ class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
         dt = date(self.year, self.month, self.day) + timedelta(days=value)
         return self.__class__(self.event_name, dt.year, dt.month, dt.day, self.system)
 
+    def period_start(self):
+        return datetime(self.year, self.month, self.day)
+
+    def period_end(self):
+        return datetime(self.year, self.month, self.day, 23, 59, 59, 999999)
+
 
 class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
     """
@@ -405,10 +432,15 @@ class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
                                      '%s-%s-%s-%s' %\
                                          (self.year, self.month, self.day, self.hour))
 
-
     def delta(self, value):
         dt = datetime(self.year, self.month, self.day, self.hour) + timedelta(hours=value)
         return self.__class__(self.event_name, dt.year, dt.month, dt.day, dt.hour, self.system)
+
+    def period_start(self):
+        return datetime(self.year, self.month, self.day, self.hour)
+
+    def period_end(self):
+        return datetime(self.year, self.month, self.day, self.hour, 59, 59, 999999)
 
 
 #--- Bit operations ----------------------------------------------

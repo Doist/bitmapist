@@ -153,6 +153,19 @@ year_ago = current_month.delta(-12)
 
 ```
 
+Every event object has `period_start` and `period_end` methods to find a
+time span of the event. This can be useful for caching values when the caching
+of "events in future" is not desirable:
+
+```python
+
+ev = MonthEvent('active', dt)
+if ev.period_end() < now:
+    cache.set('active_users_<...>', len(ev))
+
+```
+
+
 As something new tracking hourly is disabled (to save memory!) To enable it as default do::
 
 ```python
