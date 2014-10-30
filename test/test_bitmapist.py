@@ -163,3 +163,16 @@ def test_get_event_names_prefix():
         mark_event(e, 1)
     BitOpAnd(DayEvents('foo'), DayEvents('bar'))
     assert set(get_event_names(prefix='b', batch=2)) == {'bar', 'baz'}
+
+
+def test_bit_operations_magic():
+    mark_event('foo', 1)
+    mark_event('foo', 2)
+    mark_event('bar', 2)
+    mark_event('bar', 3)
+    foo = DayEvents('foo')
+    bar = DayEvents('bar')
+    assert list(foo & bar) == [2]
+    assert list(foo | bar) == [1, 2, 3]
+    assert list(foo ^ bar) == [1, 3]
+    assert list(~foo & bar) == [3]

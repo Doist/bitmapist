@@ -121,6 +121,16 @@ print len(active_2_months)
 assert 123 in active_2_months
 ```
 
+Alternatively, you can use standard Python syntax for bitwise operations.
+
+
+```python
+last_month_event = MonthEvents('active', last_month.year, last_month.month)
+this_month_event = MonthEvents('active', now.year, now.month)
+active_two_months = last_month_event & this_month_event
+```
+Operators `&`, `|`, `^` and `~` supported.
+
 Work with nested bit operations (imagine what you can do with this ;-))!
 
 ```python

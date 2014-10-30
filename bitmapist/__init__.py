@@ -226,6 +226,21 @@ class MixinIter:
             yield item
 
 
+class MixinBitOperations:
+
+    def __invert__(self):
+        return BitOpNot(self)
+
+    def __or__(self, other):
+        return BitOpOr(self, other)
+
+    def __and__(self, other):
+        return BitOpAnd(self, other)
+
+    def __xor__(self, other):
+        return BitOpXor(self, other)
+
+
 class MixinEventsMisc:
     """
     Extends with an obj.has_events_marked()
@@ -242,14 +257,6 @@ class MixinEventsMisc:
     def delete(self):
         cli = get_redis(self.system)
         cli.delete(self.redis_key)
-
-    def next(self):
-        """ next object in a datetime line """
-        return self.delta(value=1)
-
-    def prev(self):
-        """ prev object in a datetime line """
-        return self.delta(value=-1)
 
     def __eq__(self, other):
         other_key = getattr(other, 'redis_key', None)
@@ -288,7 +295,19 @@ class MixinContains:
             return False
 
 
-class YearEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
+class GenericPeriodEvents(MixinIter, MixinCounts, MixinContains,
+                          MixinEventsMisc, MixinBitOperations):
+
+    def next(self):
+        """ next object in a datetime line """
+        return self.delta(value=1)
+
+    def prev(self):
+        """ prev object in a datetime line """
+        return self.delta(value=-1)
+
+
+class YearEvents(GenericPeriodEvents):
     """
     Events for a year.
 
@@ -323,7 +342,7 @@ class YearEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
         return datetime(self.year, 12, 31, 23, 59, 59, 999999)
 
 
-class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
+class MonthEvents(GenericPeriodEvents):
     """
     Events for a month.
 
@@ -357,7 +376,7 @@ class MonthEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
         return datetime(self.year, self.month, day, 23, 59, 59, 999999)
 
 
-class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
+class WeekEvents(GenericPeriodEvents):
     """
     Events for a week.
 
@@ -394,7 +413,7 @@ class WeekEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
         return datetime(e.year, e.month, e.day, 23, 59, 59, 999999)
 
 
-class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
+class DayEvents(GenericPeriodEvents):
     """
     Events for a day.
 
@@ -428,7 +447,7 @@ class DayEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
         return datetime(self.year, self.month, self.day, 23, 59, 59, 999999)
 
 
-class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
+class HourEvents(GenericPeriodEvents):
     """
     Events for a hour.
 
@@ -465,7 +484,8 @@ class HourEvents(MixinIter, MixinCounts, MixinContains, MixinEventsMisc):
 
 
 #--- Bit operations ----------------------------------------------
-class BitOperation:
+class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
+                   MixinBitOperations):
 
     """
     Base class for bit operations (AND, OR, XOR).
@@ -510,22 +530,22 @@ class BitOperation:
         cli.bitop(op_name, self.redis_key, *event_redis_keys)
 
 
-class BitOpAnd(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpAnd(BitOperation):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'AND', system_or_event, *events)
 
-class BitOpOr(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpOr(BitOperation):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'OR', system_or_event, *events)
 
-class BitOpXor(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpXor(BitOperation):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'XOR', system_or_event, *events)
 
-class BitOpNot(BitOperation, MixinIter, MixinContains, MixinCounts, MixinEventsMisc):
+class BitOpNot(BitOperation):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'NOT', system_or_event, *events)
