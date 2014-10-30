@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from bitmapist import mark_event,\
                       MonthEvents, WeekEvents, DayEvents, HourEvents,\
-                      BitOpAnd, BitOpOr
+                      BitOpAnd, BitOpOr, get_event_names
 
 
 def test_mark_with_diff_days():
@@ -147,3 +147,19 @@ def test_events_marked():
 
     assert MonthEvents('active', now.year, now.month).get_count() == 1
     assert MonthEvents('active', now.year, now.month).has_events_marked() == True
+
+
+def test_get_event_names():
+    event_names = {'foo', 'bar', 'baz', 'spam', 'egg'}
+    for e in event_names:
+        mark_event(e, 1)
+    BitOpAnd(DayEvents('foo'), DayEvents('bar'))
+    assert set(get_event_names(batch=2)) == event_names
+
+
+def test_get_event_names_prefix():
+    event_names = {'foo', 'bar', 'baz', 'spam', 'egg'}
+    for e in event_names:
+        mark_event(e, 1)
+    BitOpAnd(DayEvents('foo'), DayEvents('bar'))
+    assert set(get_event_names(prefix='b', batch=2)) == {'bar', 'baz'}

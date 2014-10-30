@@ -155,6 +155,27 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
     p.execute()
 
 
+def get_event_names(system='default', prefix='', batch=10000):
+    """
+    Return the list of all event names, with no particular order. Optional
+    `prefix` value is used to filter only subset of keys
+    """
+    cli = get_redis(system)
+    expr = 'trackist_%s*' % prefix
+    cursor = '0'
+    ret = set()
+    while True:
+        cursor, results = cli.scan(cursor, expr, batch)
+        for result in results:
+            chunks = result.split('_')
+            event_name = '_'.join(chunks[1:-1])
+            if not event_name.startswith('bitop_'):
+                ret.add(event_name)
+        if cursor == '0':
+            break
+    return list(ret)
+
+
 def delete_all_events(system='default'):
     """
     Delete all events from the database.
