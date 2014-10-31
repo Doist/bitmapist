@@ -191,6 +191,4 @@ mark_event('active', 123, track_hourly=False)
 
 Copyright: 2012 by Doist Ltd.
 
-Developer: Amir Salihefendic ( http://amix.dk )
-
 License: BSD
