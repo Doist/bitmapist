@@ -270,7 +270,7 @@ class MixinEventsMisc:
     """
     def has_events_marked(self):
         cli = get_redis(self.system)
-        return cli.get(self.redis_key) != None
+        return cli.exists(self.redis_key)
 
     def delete(self):
         cli = get_redis(self.system)
