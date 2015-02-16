@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import pytest
 from datetime import datetime, timedelta
 
 from bitmapist import mark_event,\
@@ -150,7 +149,6 @@ def test_events_marked():
     assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 
 
-@pytest.mark.timeout(5)
 def test_get_event_names():
     event_names = {'foo', 'bar', 'baz', 'spam', 'egg'}
     for e in event_names:
@@ -159,7 +157,6 @@ def test_get_event_names():
     assert set(get_event_names(batch=2)) == event_names
 
 
-@pytest.mark.timeout(5)
 def test_get_event_names_prefix():
     event_names = {'foo', 'bar', 'baz', 'spam', 'egg'}
     for e in event_names:
