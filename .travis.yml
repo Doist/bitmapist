@@ -6,7 +6,6 @@ services:
   - redis-server
 
 install:
-  - pip install pytest-timeout==0.4
   - python setup.py -q install
 
 script: py.test -vv
