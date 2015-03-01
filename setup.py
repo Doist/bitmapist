@@ -12,7 +12,7 @@ setup(name='bitmapist',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
-      install_requires = ['redis>=2.7.1', 'python-dateutil'],
+      install_requires = ['redis>=2.10.0', 'python-dateutil'],
       classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",

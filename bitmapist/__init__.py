@@ -180,17 +180,12 @@ def get_event_names(system='default', prefix='', batch=10000):
     """
     cli = get_redis(system)
     expr = 'trackist_%s*' % prefix
-    cursor = '0'
     ret = set()
-    while True:
-        cursor, results = cli.scan(cursor, expr, batch)
-        for result in results:
-            chunks = result.split('_')
-            event_name = '_'.join(chunks[1:-1])
-            if not event_name.startswith('bitop_'):
-                ret.add(event_name)
-        if cursor == '0':
-            break
+    for result in cli.scan_iter(match=expr, count=batch):
+        chunks = result.split('_')
+        event_name = '_'.join(chunks[1:-1])
+        if not event_name.startswith('bitop_'):
+            ret.add(event_name)
     return list(ret)
 
 

@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+
+services:
+  - redis-server
+
+install:
+  - python setup.py -q install
+
+script: py.test -vv
