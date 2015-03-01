@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Doist/bitmapist.svg?branch=master)](https://travis-ci.org/Doist/bitmapist)
+Test status: [![Build Status](https://travis-ci.org/Doist/bitmapist.svg?branch=master)](https://travis-ci.org/Doist/bitmapist)
 
 bitmapist: a powerful analytics library for Redis
 =================================================================
