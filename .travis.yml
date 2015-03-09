@@ -1,11 +1,20 @@
 language: python
-python:
-  - "2.7"
+
+sudo: false
 
 services:
   - redis-server
 
-install:
-  - python setup.py -q install
+env:
+  - TOX_ENV=py27
+  - TOX_ENV=py32
+  - TOX_ENV=py33
+  - TOX_ENV=py34
+  - TOX_ENV=pypy
+  - TOX_ENV=pypy3
 
-script: py.test -vv
+install:
+  - pip install tox
+
+script:
+  - tox -e $TOX_ENV
