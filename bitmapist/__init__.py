@@ -79,6 +79,8 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 :developer: Amir Salihefendic ( http://amix.dk )
 :license: BSD
 """
+from builtins import range, bytes
+
 import redis
 import calendar
 from datetime import datetime, date, timedelta
@@ -182,6 +184,7 @@ def get_event_names(system='default', prefix='', batch=10000):
     expr = 'trackist_%s*' % prefix
     ret = set()
     for result in cli.scan_iter(match=expr, count=batch):
+        result = result.decode()
         chunks = result.split('_')
         event_name = '_'.join(chunks[1:-1])
         if not event_name.startswith('bitop_'):
@@ -221,13 +224,15 @@ class MixinIter:
         if val is None:
             return
 
+        val = bytes(val)
+
         zero = chr(0)
         for char_num, char in enumerate(val):
             # shortcut
             if char == zero:
                 continue
             # find set bits, generate smth like [1, 0, ...]
-            bits = [(ord(char) >> i) & 1 for i in xrange(7, -1, -1)]
+            bits = [(char >> i) & 1 for i in range(7, -1, -1)]
             # list of positions with ones
             set_bits = list(pos for pos, val in enumerate(bits) if val)
             # yield everything we need
@@ -340,7 +345,7 @@ class YearEvents(GenericPeriodEvents):
         self.system = system
 
         months = []
-        for m in xrange(1, 13):
+        for m in range(1, 13):
             months.append( MonthEvents(event_name, self.year, m, system) )
         or_op = BitOpOr(*months)
         self.redis_key = or_op.redis_key

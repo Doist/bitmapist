@@ -1,3 +1,5 @@
+from builtins import range
+
 import pytest
 import os
 import subprocess
@@ -65,7 +67,7 @@ def wait_for_socket(host, port, seconds=3):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(0.1)
-    for _ in xrange(iterations):
+    for _ in range(iterations):
         result = sock.connect_ex((host, port))
         if result == 0:
             sock.close()
