@@ -376,8 +376,8 @@ class YearEvents(GenericPeriodEvents):
 
         months = []
         for m in range(1, 13):
-            months.append(MonthEvents(event_name, self.year, m, system))
-        or_op = BitOpOr(*months)
+            months.append( MonthEvents(event_name, self.year, m, system) )
+        or_op = BitOpOr(system, *months)
         self.redis_key = or_op.redis_key
 
     def delta(self, value):
