@@ -8,17 +8,27 @@
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '3.6',
+      version = '3.8',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
-      install_requires = ['redis>=2.7.1', 'python-dateutil'],
+      install_requires=[
+          'redis>=2.10.0',
+          'python-dateutil',
+          'future>=0.14.3'
+      ],
       classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
         "Topic :: Software Development :: Libraries :: Python Modules",
       ],
       packages=['bitmapist', 'bitmapist.cohort'],

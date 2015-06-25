@@ -79,6 +79,8 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 :developer: Amir Salihefendic ( http://amix.dk )
 :license: BSD
 """
+from builtins import range, bytes
+
 import redis
 import calendar
 from datetime import datetime, date, timedelta
@@ -115,21 +117,34 @@ def get_redis(system='default'):
     """
     Get a redis-py client instance with entry `system`.
 
-    :param :system The name of the system, extra systems can be setup via `setup_redis`
+    :param :system The name of the system, redis.Redis or redis.Pipeline
+        instance, extra systems can be setup via `setup_redis`
     """
-    return SYSTEMS[system]
+    if isinstance(system, redis.StrictRedis):
+        return system
+    else:
+        return SYSTEMS[system]
 
 
 #--- Events marking and deleting ----------------------------------------------
-def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
+def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
+               use_pipeline=True):
     """
     Marks an event for hours, days, weeks and months.
 
     :param :event_name The name of the event, could be "active" or "new_signups"
-    :param :uuid An unique id, typically user id. The id should not be huge, read Redis documentation why (bitmaps)
-    :param :system The Redis system to use
-    :param :now Which date should be used as a reference point, default is `datetime.utcnow`
-    :param :track_hourly Should hourly stats be tracked, defaults to bitmapist.TRACK_HOURLY, but an be changed
+    :param :uuid An unique id, typically user id. The id should not be huge,
+        read Redis documentation why (bitmaps)
+    :param :system The Redis system to use (string, Redis instance, or Pipeline
+        instance).
+    :param :now Which date should be used as a reference point, default is
+        `datetime.utcnow()`
+    :param :track_hourly Should hourly stats be tracked, defaults to
+        bitmapist.TRACK_HOURLY
+    :param :use_pipeline Boolean flag indicating if the command should use
+        pipelines or not. You may want to avoid using pipeline within the
+        command if you provide the pipeline object in `system` argument and
+        want to manage the pipe execution yourself.
 
     Examples::
 
@@ -139,13 +154,15 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
         # Mark task completed for id 252
         mark_event('tasks:completed', 252)
     """
-    _mark(event_name, uuid, 1, system, now, track_hourly)
+    _mark(event_name, uuid, system, now, track_hourly, use_pipeline, value=1)
 
-def unmark_event(event_name, uuid, system='default', now=None, track_hourly=None):
-    _mark(event_name, uuid, 0, system, now, track_hourly)
+def unmark_event(event_name, uuid, system='default', now=None, track_hourly=None,
+                 use_pipeline=True):
+    _mark(event_name, uuid, system, now, track_hourly, use_pipeline, value=0)
 
-def _mark(event_name, uuid, value, system='default', now=None, track_hourly=None):
-    if track_hourly == None:
+def _mark(event_name, uuid, system='default', now=None,
+          track_hourly=None, use_pipeline=True, value=1):
+    if track_hourly is None:
         track_hourly = TRACK_HOURLY
 
     if not now:
@@ -155,10 +172,15 @@ def _mark(event_name, uuid, value, system='default', now=None, track_hourly=None
     if track_hourly:
         obj_classes.append(HourEvents)
 
-    p = get_redis(system).pipeline()
+    client = get_redis(system)
+    if use_pipeline:
+        client = client.pipeline()
+
     for obj_class in obj_classes:
-        p.setbit(obj_class.from_date(event_name, now).redis_key, uuid, value)
-    p.execute()
+        client.setbit(obj_class.from_date(event_name, now).redis_key, uuid, value)
+
+    if use_pipeline:
+        client.execute()
 
 
 def get_event_names(system='default', prefix='', batch=10000):
@@ -168,17 +190,13 @@ def get_event_names(system='default', prefix='', batch=10000):
     """
     cli = get_redis(system)
     expr = 'trackist_%s*' % prefix
-    cursor = '0'
     ret = set()
-    while True:
-        cursor, results = cli.scan(cursor, expr, batch)
-        for result in results:
-            chunks = result.split('_')
-            event_name = '_'.join(chunks[1:-1])
-            if not event_name.startswith('bitop_'):
-                ret.add(event_name)
-        if cursor == '0':
-            break
+    for result in cli.scan_iter(match=expr, count=batch):
+        result = result.decode()
+        chunks = result.split('_')
+        event_name = '_'.join(chunks[1:-1])
+        if not event_name.startswith('bitop_'):
+            ret.add(event_name)
     return list(ret)
 
 
@@ -214,13 +232,15 @@ class MixinIter:
         if val is None:
             return
 
+        val = bytes(val)
+
         zero = chr(0)
         for char_num, char in enumerate(val):
             # shortcut
             if char == zero:
                 continue
             # find set bits, generate smth like [1, 0, ...]
-            bits = [(ord(char) >> i) & 1 for i in xrange(7, -1, -1)]
+            bits = [(char >> i) & 1 for i in range(7, -1, -1)]
             # list of positions with ones
             set_bits = list(pos for pos, val in enumerate(bits) if val)
             # yield everything we need
@@ -258,7 +278,7 @@ class MixinEventsMisc:
     """
     def has_events_marked(self):
         cli = get_redis(self.system)
-        return cli.get(self.redis_key) != None
+        return cli.exists(self.redis_key)
 
     def delete(self):
         cli = get_redis(self.system)
@@ -333,7 +353,7 @@ class YearEvents(GenericPeriodEvents):
         self.system = system
 
         months = []
-        for m in xrange(1, 13):
+        for m in range(1, 13):
             months.append( MonthEvents(event_name, self.year, m, system) )
         or_op = BitOpOr(*months)
         self.redis_key = or_op.redis_key
