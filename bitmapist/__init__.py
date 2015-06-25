@@ -139,6 +139,12 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
         # Mark task completed for id 252
         mark_event('tasks:completed', 252)
     """
+    _mark(event_name, uuid, 1, system, now, track_hourly)
+
+def unmark_event(event_name, uuid, system='default', now=None, track_hourly=None):
+    _mark(event_name, uuid, 0, system, now, track_hourly)
+
+def _mark(event_name, uuid, value, system='default', now=None, track_hourly=None):
     if track_hourly == None:
         track_hourly = TRACK_HOURLY
 
@@ -151,7 +157,7 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None):
 
     p = get_redis(system).pipeline()
     for obj_class in obj_classes:
-        p.setbit(obj_class.from_date(event_name, now).redis_key, uuid, 1)
+        p.setbit(obj_class.from_date(event_name, now).redis_key, uuid, value)
     p.execute()
 
 

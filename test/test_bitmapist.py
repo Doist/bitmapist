@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
-from bitmapist import mark_event,\
+from bitmapist import mark_event, unmark_event,\
                       MonthEvents, WeekEvents, DayEvents, HourEvents,\
                       BitOpAnd, BitOpOr, get_event_names
 
@@ -27,6 +27,15 @@ def test_mark_with_diff_days():
     assert 123 in HourEvents('active', now.year, now.month, now.day, now.hour)
     assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour)
     assert 124 not in HourEvents('active', now.year, now.month, now.day, now.hour-1)
+
+def test_mark_unmark():
+    now = datetime.utcnow()
+
+    mark_event('active', 125)
+    assert 125 in MonthEvents('active', now.year, now.month)
+
+    unmark_event('active', 125)
+    assert 125 not in MonthEvents('active', now.year, now.month)
 
 
 def test_mark_counts():
