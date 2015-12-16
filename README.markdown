@@ -26,7 +26,7 @@ Additionally bitmapist can generate cohort graphs that can do following:
 * How many % of users that were active last [days, weeks, months] are still active?
 * How many % of users that performed action X also performed action Y (and this over time)
 * And a lot of other things!
-* 
+
 If you want to read more about bitmaps please read following:
 
 * http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
