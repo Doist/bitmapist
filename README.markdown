@@ -194,7 +194,8 @@ Additionally you can supply an extra argument to `mark_event` to bypass the defa
 mark_event('active', 123, track_hourly=False)
 ```
 
-## bitmapist cohort
+bitmapist cohort
+========
 With bitmapist cohort you can get a form and a table rendering of the data you keep in bitmapist. If this sounds confusing [please look at Mixpanel](https://mixpanel.com/retention/).
 
 Here's a simple example of how to generate a form and a rendering of the data you have inside bitmapist:
