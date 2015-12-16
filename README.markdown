@@ -21,19 +21,19 @@ This library is very easy to use and enables you to create your own reports easi
 Using Redis bitmaps you can store events for millions of users in a very little amount of memory (megabytes).
 You should be careful about using huge ids (e.g. 2^32 or bigger) as this could require larger amounts of memory.
 
-Now with Cohort charts! Read more here:
-
-* [Releasing bitmapist.cohort - or how we saved over $2000/month!](http://amix.dk/blog/post/19718)
-
+Additionally bitmapist can generate cohort graphs that can do following:
+* Cohort over user retention
+* How many % of users that were active last [days, weeks, months] are still active?
+* How many % of users that performed action X also performed action Y (and this over time)
+* And a lot of other things!
+* 
 If you want to read more about bitmaps please read following:
 
 * http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
 * http://redis.io/commands/setbit
 * http://en.wikipedia.org/wiki/Bit_array
 * http://www.slideshare.net/crashlytics/crashlytics-on-redis-analytics
-* http://amix.dk/blog/post/19714 [my blog post]
 
-Requires Redis 2.6+ and newest version of redis-py.
 
 
 Installation
@@ -41,7 +41,7 @@ Installation
 
 Can be installed very easily via:
 
-    $ sudo pip install bitmapist
+    $ pip install bitmapist
 
 
 Ports
@@ -193,6 +193,39 @@ Additionally you can supply an extra argument to `mark_event` to bypass the defa
 ```python
 mark_event('active', 123, track_hourly=False)
 ```
+
+## bitmapist cohort
+With bitmapist cohort you can get a form and a table rendering of the data you keep in bitmapist. If this sounds confusing [please look at Mixpanel](https://mixpanel.com/retention/).
+
+Here's a simple example of how to generate a form and a rendering of the data you have inside bitmapist:
+```python
+from bitmapist import cohort
+
+html_form = cohort.render_html_form(
+    action_url='/_Cohort',
+    selections1=[ ('Are Active', 'user:active'), ],
+    selections2=[ ('Task completed', 'task:complete'), ]
+)
+print html_form
+
+dates_data = cohort.get_dates_data(select1='user:active',
+                                   select2='task:complete',
+                                   select3=None,
+                                   time_group='days')
+
+html_data = cohort.render_html_data(dates_data,
+                                    time_group='days')
+
+print html_data
+
+# All the arguments should come from the FORM element (html_form)
+# but to make things more clear I have filled them in directly
+```
+
+This will render something similar to this:
+
+![bitmapist cohort screenshot](https://raw.githubusercontent.com/Doist/bitmapist/master/static/cohort_screenshot.png "bitmapist cohort screenshot")
+
 
 Copyright: 2012 by Doist Ltd.
 
