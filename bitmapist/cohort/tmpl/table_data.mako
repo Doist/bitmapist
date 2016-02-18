@@ -39,7 +39,7 @@
 <table class="cohort_table" cellpadding="0" cellspacing="0">
     <tr>
         <th width="200"></th>
-        %for i in range(0, 13):
+        %for i in range(0, num_of_rows+1):
             <th class="entry">${ i }</th>
         %endfor
     </tr>
@@ -63,7 +63,7 @@
                 <div class="total_count">${ row_data[1] }</div>
             </td>
 
-            %for i in range(2, 15):
+            %for i in range(2, num_of_rows+3):
                 <%
                 prct = row_data[i]
                 %>
@@ -90,7 +90,7 @@
 
     <tr>
         <td class="avg_row"></td>
-        %for i in range(2, 15):
+        %for i in range(2, num_of_rows+3):
             <%
                 cnts = 0
                 total = 0.0

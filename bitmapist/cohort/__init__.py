@@ -77,7 +77,7 @@ from bitmapist import WeekEvents, DayEvents, MonthEvents, YearEvents,\
 def render_html_form(action_url, selections1, selections2,
                      time_group='days',
                      select1=None, select2=None, select3=None,
-                     as_precent=1, num_results=25):
+                     as_precent=1, num_results=25, num_of_rows=12):
     """
     Render a HTML form that can be used to query the data in bitmapist.
 
@@ -102,13 +102,14 @@ def render_html_form(action_url, selections1, selections2,
             select3=select3,
             action_url=action_url,
             as_precent=as_precent,
-            num_results=int(num_results)
+            num_results=int(num_results),
+            num_of_rows=int(num_of_rows)
     )
 
 
 def render_html_data(dates_data,
                      as_precent=True, time_group='days',
-                     num_results=25):
+                     num_results=25, num_of_rows=12):
     """
     Render's data as HTML, inside a TABLE element.
 
@@ -120,12 +121,13 @@ def render_html_data(dates_data,
         dates_data=dates_data,
         as_precent=as_precent,
         time_group=time_group,
-        num_results=num_results
+        num_results=num_results,
+        num_of_rows=num_of_rows
     )
 
 def render_csv_data(dates_data,
                     as_precent=True, time_group='days',
-                    num_results=25):
+                    num_results=25, num_of_rows=12):
     """
     Render's data as CSV.
     """
@@ -133,14 +135,15 @@ def render_csv_data(dates_data,
         dates_data=dates_data,
         as_precent=as_precent,
         time_group=time_group,
-        num_results=num_results
+        num_results=num_results,
+        num_of_rows=num_of_rows
     )
 
 
 #--- Data rendering ----------------------------------------------
 def get_dates_data(select1, select2, select3,
                    time_group='days', system='default',
-                   as_precent=1, num_results=25):
+                   as_precent=1, num_results=25, num_of_rows=12):
     """
     Fetch the data from bitmapist.
 
@@ -153,6 +156,7 @@ def get_dates_data(select1, select2, select3,
     :return A list of day data, formated like `[[datetime, count], ...]`
     """
     num_results = int(num_results)
+    num_of_rows = int(num_of_rows)
 
     # Days
     if time_group == 'days':
@@ -198,7 +202,7 @@ def get_dates_data(select1, select2, select3,
         result.append(total_day_count)
 
         # Daily count
-        for d_delta in range(0, 13):
+        for d_delta in range(0, num_of_rows+1):
             if total_day_count == 0:
                 result.append( '' )
                 continue

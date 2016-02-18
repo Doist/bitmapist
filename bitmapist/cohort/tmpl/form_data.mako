@@ -50,6 +50,15 @@
                 <option value="100" ${ 'selected="selected"' if num_results == 100 else '' }>100</option>
             </select>
         </dd>
+
+        <dd>
+            Number of rows:
+            <select name="num_of_rows">
+                <option value="12" ${ 'selected="selected"' if num_of_rows == 12 else '' }>12</option>
+                <option value="24" ${ 'selected="selected"' if num_of_rows == 24 else '' }>24</option>
+                <option value="48" ${ 'selected="selected"' if num_of_rows == 48 else '' }>48</option>
+            </select>
+        </dd>
     </dl>
 
     <dl>
