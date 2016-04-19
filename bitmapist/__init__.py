@@ -86,7 +86,8 @@ import calendar
 from datetime import datetime, date, timedelta
 
 
-#--- Systems related ----------------------------------------------
+# --- Systems related
+
 SYSTEMS = {
     'default': redis.Redis(host='localhost', port=6379)
 }
@@ -95,6 +96,7 @@ SYSTEMS = {
 # Note that this can have huge implications in amounts
 # of memory that Redis uses (especially with huge integers)
 TRACK_HOURLY = False
+
 
 def setup_redis(name, host, port, **kw):
     """
@@ -113,6 +115,7 @@ def setup_redis(name, host, port, **kw):
     """
     SYSTEMS[name] = redis.Redis(host=host, port=port, **kw)
 
+
 def get_redis(system='default'):
     """
     Get a redis-py client instance with entry `system`.
@@ -126,7 +129,8 @@ def get_redis(system='default'):
         return SYSTEMS[system]
 
 
-#--- Events marking and deleting ----------------------------------------------
+# --- Events marking and deleting
+
 def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
                use_pipeline=True):
     """
@@ -156,9 +160,11 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
     """
     _mark(event_name, uuid, system, now, track_hourly, use_pipeline, value=1)
 
+
 def unmark_event(event_name, uuid, system='default', now=None, track_hourly=None,
                  use_pipeline=True):
     _mark(event_name, uuid, system, now, track_hourly, use_pipeline, value=0)
+
 
 def _mark(event_name, uuid, system='default', now=None,
           track_hourly=None, use_pipeline=True, value=1):
@@ -220,7 +226,8 @@ def delete_temporary_bitop_keys(system='default'):
         cli.delete(*keys)
 
 
-#--- Events ----------------------------------------------
+# --- Events
+
 class MixinIter:
     """
     Extends with an obj.get_uuids() returning the iterator of uuids in a key
@@ -354,7 +361,7 @@ class YearEvents(GenericPeriodEvents):
 
         months = []
         for m in range(1, 13):
-            months.append( MonthEvents(event_name, self.year, m, system) )
+            months.append(MonthEvents(event_name, self.year, m, system))
         or_op = BitOpOr(*months)
         self.redis_key = or_op.redis_key
 
@@ -495,8 +502,8 @@ class HourEvents(GenericPeriodEvents):
         self.hour = not_none(hour, now.hour)
         self.system = system
         self.redis_key = _prefix_key(event_name,
-                                     '%s-%s-%s-%s' %\
-                                         (self.year, self.month, self.day, self.hour))
+                                     '%s-%s-%s-%s' %
+                                     (self.year, self.month, self.day, self.hour))
 
     def delta(self, value):
         dt = datetime(self.year, self.month, self.day, self.hour) + timedelta(hours=value)
@@ -509,7 +516,8 @@ class HourEvents(GenericPeriodEvents):
         return datetime(self.year, self.month, self.day, self.hour, 59, 59, 999999)
 
 
-#--- Bit operations ----------------------------------------------
+# --- Bit operations
+
 class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
                    MixinBitOperations):
 
@@ -561,15 +569,18 @@ class BitOpAnd(BitOperation):
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'AND', system_or_event, *events)
 
+
 class BitOpOr(BitOperation):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'OR', system_or_event, *events)
 
+
 class BitOpXor(BitOperation):
 
     def __init__(self, system_or_event, *events):
         BitOperation.__init__(self, 'XOR', system_or_event, *events)
+
 
 class BitOpNot(BitOperation):
 
@@ -577,12 +588,13 @@ class BitOpNot(BitOperation):
         BitOperation.__init__(self, 'NOT', system_or_event, *events)
 
 
-#--- Private ----------------------------------------------
+# --- Private
+
 def _prefix_key(event_name, date):
     return 'trackist_%s_%s' % (event_name, date)
 
-#--- Helper functions ---------------------------------------
 
+# --- Helper functions
 
 def add_month(year, month, delta):
     """
@@ -592,7 +604,7 @@ def add_month(year, month, delta):
     year, month = divmod(year * 12 + month + delta, 12)
     if month == 0:
         month = 12
-        year = year -1
+        year = year - 1
     return year, month
 
 

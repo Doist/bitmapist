@@ -14,7 +14,7 @@ env:
   - TOX_ENV=pypy3
 
 install:
-  - pip install tox
+  - pip install tox-travis "virtualenv<14.0.0"
 
 script:
   - tox -e $TOX_ENV

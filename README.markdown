@@ -211,7 +211,6 @@ print html_form
 
 dates_data = cohort.get_dates_data(select1='user:active',
                                    select2='task:complete',
-                                   select3=None,
                                    time_group='days')
 
 html_data = cohort.render_html_data(dates_data,

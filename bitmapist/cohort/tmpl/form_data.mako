@@ -12,19 +12,21 @@
 <form action="${ action_url }" method="GET" class="cohort_form">
     <dl>
         <dd>
-            Show me people who 
+            Show me people who
             ${ render_options('select1', selections1, select1) }
-            and then came back and
+            AND
+            ${ render_options('select1b', selections1b, select1b) }
+            and then came back to
             ${ render_options('select2', selections2, select2) }
-            and then came back and
-            ${ render_options('select3', selections3, select3) }
+            AND
+            ${ render_options('select2b', selections2b, select2b) }
         </dd>
 
     </dl>
 
     <dl>
         <dd>
-            Group By: 
+            Group By:
             <select name="time_group">
                 <option value="days" ${ 'selected="selected"' if time_group == 'days' else '' }>Days</option>
                 <option value="weeks" ${ 'selected="selected"' if time_group == 'weeks' else '' }>Weeks</option>

@@ -69,41 +69,57 @@ from dateutil.relativedelta import relativedelta
 
 from mako.lookup import TemplateLookup
 
-from bitmapist import WeekEvents, DayEvents, MonthEvents, YearEvents,\
-                      BitOpAnd
+from bitmapist import WeekEvents, DayEvents, MonthEvents, YearEvents, BitOpAnd
 
 
-#--- HTML rendering ----------------------------------------------
-def render_html_form(action_url, selections1, selections2,
+# --- HTML rendering
+
+def render_html_form(action_url,
+                     selections1, selections1b=None,
+                     selections2=None, selections2b=None,
                      time_group='days',
-                     select1=None, select2=None, select3=None,
+                     select1=None, select1b=None, select2=None, select2b=None,
                      as_precent=1, num_results=25, num_of_rows=12):
     """
     Render a HTML form that can be used to query the data in bitmapist.
 
     :param :action_url The action URL of the <form> element. The form will always to a GET request.
     :param :selections1 A list of selections that the user can filter by, example `[ ('Are Active', 'active'), ]`
+    :param :selections1b Extra selections, used with the first selection, example `[ ('in US', 'country:US'), ]`
     :param :selections2 A list of selections that the user can filter by, example `[ ('Played song', 'song:play'), ]`
+    :param :selections2b Extra selections, used with the second selection, example `[ ('Playlist', 'playlist:new'), ]`
     :param :time_group What data should be clustred by, can be `days`, `weeks`, `months`, `years`
     :param :select1 What is the current selected filter (first)
+    :param :select1b What is the current selected filter (extra, optional)
     :param :select2 What is the current selected filter (second)
-    :param :select3 What is the current selected filter (third, optional)
+    :param :select2b What is the current selected filter (extra, optional)
+
     """
-    selections3 = [ ('------', '') ]
-    selections3.extend(selections2)
+    if selections1b is None:
+        selections1b = selections1[:]
+    selections1b.insert(0, ('------', ''))
+
+    if selections2 is None:
+        selections2 = selections1[:]
+
+    if selections2b is None:
+        selections2b = selections2[:]
+    selections2b.insert(0, ('------', ''))
 
     return get_lookup().get_template('form_data.mako').render(
-            selections1=selections1,
-            selections2=selections2,
-            selections3=selections3,
-            time_group=time_group,
-            select1=select1,
-            select2=select2,
-            select3=select3,
-            action_url=action_url,
-            as_precent=as_precent,
-            num_results=int(num_results),
-            num_of_rows=int(num_of_rows)
+        selections1=selections1,
+        selections1b=selections1b,
+        selections2=selections2,
+        selections2b=selections2b,
+        time_group=time_group,
+        select1=select1,
+        select1b=select1b,
+        select2=select2,
+        select2b=select2b,
+        action_url=action_url,
+        as_precent=as_precent,
+        num_results=int(num_results),
+        num_of_rows=int(num_of_rows)
     )
 
 
@@ -125,6 +141,7 @@ def render_html_data(dates_data,
         num_of_rows=num_of_rows
     )
 
+
 def render_csv_data(dates_data,
                     as_precent=True, time_group='days',
                     num_results=25, num_of_rows=12):
@@ -140,16 +157,18 @@ def render_csv_data(dates_data,
     )
 
 
-#--- Data rendering ----------------------------------------------
-def get_dates_data(select1, select2, select3,
+# --- Data rendering
+
+def get_dates_data(select1, select1b, select2, select2b,
                    time_group='days', system='default',
                    as_precent=1, num_results=25, num_of_rows=12):
     """
     Fetch the data from bitmapist.
 
     :param :select1 First filter (could be `active`)
+    :param :select1b Second filter (could be `country:US`, optional)
     :param :select2 Second filter (could be `song:played`)
-    :param :select3 Second filter (could be `song:played`, optional)
+    :param :select2b Second filter (could be `playlist:created`, optional)
     :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     :param :system What bitmapist should be used?
     :param :as_precent If `True` then percents as calculated and shown. Defaults to `True`
@@ -195,61 +214,62 @@ def get_dates_data(select1, select2, select3,
     for i in range(0, date_range):
         result = [now]
 
-        # Total count
-        day_events = fn_get_events(select1, now, system)
+        # events for select1 (+select1b)
+        select1_events = fn_get_events(select1, now, system)
+        if select1b:
+            select1b_events = fn_get_events(select1b, now, system)
+            select1_events = BitOpAnd(system, select1_events, select1b_events)
 
-        total_day_count = len(day_events)
-        result.append(total_day_count)
+        select1_count = len(select1_events)
+        # clean up results of BitOps
+        if isinstance(select1_events, BitOpAnd):
+            select1_events.delete()
 
-        # Daily count
-        for d_delta in range(0, num_of_rows+1):
-            if total_day_count == 0:
-                result.append( '' )
-                continue
+        result.append(select1_count)
 
-            delta_now = now + timedelta_inc(d_delta)
-
-            delta2_events = fn_get_events(select2, delta_now, system)
-
-            if not delta2_events.has_events_marked():
+        # Move in time
+        for t_delta in range(0, num_of_rows+1):
+            if select1_count == 0:
                 result.append('')
                 continue
 
-            delta2_set_op = BitOpAnd(system, day_events, delta2_events)
+            delta_now = now + timedelta_inc(t_delta)
 
-            if not select3:
-                delta_count = len(delta2_set_op)
-                delta2_set_op.delete()
-            else:
-                delta3_events = fn_get_events(select3, delta_now, system)
+            # events for select2 (+select2b)
+            select2_events = fn_get_events(select2, delta_now, system)
+            if select2b:
+                select2b_events = fn_get_events(select2b, delta_now, system)
+                select2_events = BitOpAnd(system, select2_events, select2b_events)
 
-                if not delta3_events.has_events_marked():
-                    result.append('')
-                    continue
+            if not select2_events.has_events_marked():
+                result.append('')
+                continue
 
-                delta3_set_op = BitOpAnd(system, delta2_set_op, delta3_events)
-                delta_count = len(delta3_set_op)
+            both_events = BitOpAnd(system, select1_events, select2_events)
+            both_count = len(both_events)
 
-                delta3_set_op.delete()
-                delta2_set_op.delete()
+            # clean up results of BitOps
+            both_events.delete()
+            if isinstance(select2_events, BitOpAnd):
+                select2_events.delete()
 
             # Append to result
-            if delta_count == 0:
+            if both_count == 0:
                 result.append(float(0.0))
             else:
                 if as_precent:
-                    result.append( (float(delta_count) / float(total_day_count)) * 100 )
+                    result.append((float(both_count) / float(select1_count)) * 100)
                 else:
-                    result.append( delta_count )
+                    result.append(both_count)
 
-        dates.append( result )
-
+        dates.append(result)
         now = now + timedelta_inc(1)
 
     return dates
 
 
-#--- Custom handlers ----------------------------------------------
+# --- Custom handlers
+
 CUSTOM_HANDLERS = {}
 def set_custom_handler(event_name, callback):
     """
@@ -263,27 +283,32 @@ def set_custom_handler(event_name, callback):
     CUSTOM_HANDLERS[event_name] = callback
 
 
-#--- Private ----------------------------------------------
+# --- Private
+
 def _dispatch(key, cls, cls_args):
     if key in CUSTOM_HANDLERS:
         return CUSTOM_HANDLERS[key](key, cls, cls_args)
     else:
         return cls(key, *cls_args)
 
+
 def _day_events_fn(key, date, system):
     cls = DayEvents
     cls_args = (date.year, date.month, date.day, system)
     return _dispatch(key, cls, cls_args)
+
 
 def _weeks_events_fn(key, date, system):
     cls = WeekEvents
     cls_args = (date.year, date.isocalendar()[1], system)
     return _dispatch(key, cls, cls_args)
 
+
 def _month_events_fn(key, date, system):
     cls = MonthEvents
     cls_args = (date.year, date.month, system)
     return _dispatch(key, cls, cls_args)
+
 
 def _year_events_fn(key, date, system):
     cls = YearEvents
