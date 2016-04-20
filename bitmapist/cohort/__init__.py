@@ -221,10 +221,6 @@ def get_dates_data(select1, select1b, select2, select2b,
             select1_events = BitOpAnd(system, select1_events, select1b_events)
 
         select1_count = len(select1_events)
-        # clean up results of BitOps
-        if isinstance(select1_events, BitOpAnd):
-            select1_events.delete()
-
         result.append(select1_count)
 
         # Move in time
@@ -261,6 +257,10 @@ def get_dates_data(select1, select1b, select2, select2b,
                     result.append((float(both_count) / float(select1_count)) * 100)
                 else:
                     result.append(both_count)
+
+        # clean up results of BitOps
+        if isinstance(select1_events, BitOpAnd):
+            select1_events.delete()
 
         dates.append(result)
         now = now + timedelta_inc(1)
