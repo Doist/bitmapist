@@ -15,6 +15,7 @@ env:
 
 install:
   - pip install tox-travis "virtualenv<14.0.0"
+  - pip install Mako
 
 script:
   - tox -e $TOX_ENV
