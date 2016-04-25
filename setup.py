@@ -8,7 +8,7 @@
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '3.96',
+      version = '3.97',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",

@@ -230,10 +230,12 @@ def delete_runtime_bitop_keys():
     """
     Delete all BitOp keys that were created.
     """
-
+    global BITOPS_KEYS
     for system, key in BITOPS_KEYS:
         cli = get_redis(system)
-        cli.delete(key)
+        if cli.exists(key):
+            cli.delete(key)
+    BITOPS_KEYS = set()
 
 
 # --- Events
