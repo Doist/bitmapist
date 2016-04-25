@@ -226,6 +226,16 @@ def delete_temporary_bitop_keys(system='default'):
         cli.delete(*keys)
 
 
+def delete_runtime_bitop_keys():
+    """
+    Delete all BitOp keys that were created.
+    """
+
+    for system, key in BITOPS_KEYS:
+        cli = get_redis(system)
+        cli.delete(key)
+
+
 # --- Events
 
 class MixinIter:
@@ -518,6 +528,10 @@ class HourEvents(GenericPeriodEvents):
 
 # --- Bit operations
 
+# Holds created BitOp keys
+BITOPS_KEYS = set()
+
+
 class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
                    MixinBitOperations):
 
@@ -559,6 +573,7 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
 
         self.redis_key = 'trackist_bitop_%s_%s' % (op_name,
                                                    '-'.join(event_redis_keys))
+        BITOPS_KEYS.add((system, self.redis_key))
 
         cli = get_redis(system)
         cli.bitop(op_name, self.redis_key, *event_redis_keys)

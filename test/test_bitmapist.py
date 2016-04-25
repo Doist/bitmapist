@@ -146,6 +146,57 @@ def test_bit_operations():
     active_2_months.delete()
 
 
+def test_bit_operations_complex():
+    now = datetime.utcnow()
+    tom = now + timedelta(days=1)
+
+    mark_event('task1', 111, now=now)
+    mark_event('task1', 111, now=tom)
+    mark_event('task2', 111, now=now)
+    mark_event('task2', 111, now=tom)
+    mark_event('task1', 222, now=now)
+    mark_event('task1', 222, now=tom)
+    mark_event('task2', 222, now=now)
+    mark_event('task2', 222, now=tom)
+
+    now_events = BitOpAnd(
+        DayEvents('task1', now.year, now.month, now.day),
+        DayEvents('task2', now.year, now.month, now.day)
+    )
+
+    tom_events = BitOpAnd(
+        DayEvents('task1', tom.year, tom.month, tom.day),
+        DayEvents('task2', tom.year, tom.month, tom.day)
+    )
+
+    both_events = BitOpAnd(now_events, tom_events)
+
+    assert len(now_events) == len(tom_events)
+    assert len(now_events) == len(both_events)
+
+
+def test_bitop_key_sharing():
+    today = datetime.utcnow()
+
+    mark_event('task1', 111, now=today)
+    mark_event('task2', 111, now=today)
+    mark_event('task1', 222, now=today)
+    mark_event('task2', 222, now=today)
+
+    ev1_task1 = DayEvents('task1', today.year, today.month, today.day)
+    ev1_task2 = DayEvents('task2', today.year, today.month, today.day)
+    ev1_both = BitOpAnd(ev1_task1, ev1_task2)
+
+    ev2_task1 = DayEvents('task1', today.year, today.month, today.day)
+    ev2_task2 = DayEvents('task2', today.year, today.month, today.day)
+    ev2_both = BitOpAnd(ev2_task1, ev2_task2)
+
+    assert ev1_both.redis_key == ev2_both.redis_key
+    assert len(ev1_both) == len(ev1_both) == 2
+    ev1_both.delete()
+    assert len(ev1_both) == len(ev1_both) == 0
+
+
 def test_events_marked():
     now = datetime.utcnow()
 

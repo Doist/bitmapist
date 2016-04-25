@@ -69,7 +69,8 @@ from dateutil.relativedelta import relativedelta
 
 from mako.lookup import TemplateLookup
 
-from bitmapist import WeekEvents, DayEvents, MonthEvents, YearEvents, BitOpAnd
+from bitmapist import (WeekEvents, DayEvents, MonthEvents, YearEvents,
+                       BitOpAnd, get_redis)
 
 
 # --- HTML rendering
@@ -210,6 +211,7 @@ def get_dates_data(select1, select1b, select2, select2b,
         timedelta_inc = lambda m: relativedelta(years=m)
 
     dates = []
+    bitops = set()
 
     for i in range(0, date_range):
         result = [now]
@@ -219,6 +221,7 @@ def get_dates_data(select1, select1b, select2, select2b,
         if select1b:
             select1b_events = fn_get_events(select1b, now, system)
             select1_events = BitOpAnd(system, select1_events, select1b_events)
+            bitops.add(select1_events.redis_key)
 
         select1_count = len(select1_events)
         result.append(select1_count)
@@ -236,18 +239,15 @@ def get_dates_data(select1, select1b, select2, select2b,
             if select2b:
                 select2b_events = fn_get_events(select2b, delta_now, system)
                 select2_events = BitOpAnd(system, select2_events, select2b_events)
+                bitops.add(select2_events.redis_key)
 
             if not select2_events.has_events_marked():
                 result.append('')
                 continue
 
             both_events = BitOpAnd(system, select1_events, select2_events)
+            bitops.add(both_events.redis_key)
             both_count = len(both_events)
-
-            # clean up results of BitOps
-            both_events.delete()
-            if isinstance(select2_events, BitOpAnd):
-                select2_events.delete()
 
             # Append to result
             if both_count == 0:
@@ -258,12 +258,13 @@ def get_dates_data(select1, select1b, select2, select2b,
                 else:
                     result.append(both_count)
 
-        # clean up results of BitOps
-        if isinstance(select1_events, BitOpAnd):
-            select1_events.delete()
-
         dates.append(result)
         now = now + timedelta_inc(1)
+
+    # clean up results of BitOps
+    cli = get_redis(system)
+    for key in bitops:
+        cli.delete(key)
 
     return dates
 
