@@ -81,8 +81,10 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 """
 from builtins import range, bytes
 
+import threading
 import redis
 import calendar
+from collections import defaultdict
 from datetime import datetime, date, timedelta
 
 
@@ -230,12 +232,11 @@ def delete_runtime_bitop_keys():
     """
     Delete all BitOp keys that were created.
     """
-    global BITOPS_KEYS
-    for system, key in BITOPS_KEYS:
+    for system in local.BITOPS_KEYS:
         cli = get_redis(system)
-        if cli.exists(key):
-            cli.delete(key)
-    BITOPS_KEYS = set()
+        if len(local.BITOPS_KEYS[system]) > 0:
+            cli.delete(*local.BITOPS_KEYS[system])
+    local.BITOPS_KEYS.clear()
 
 
 # --- Events
@@ -531,7 +532,8 @@ class HourEvents(GenericPeriodEvents):
 # --- Bit operations
 
 # Holds created BitOp keys
-BITOPS_KEYS = set()
+local = threading.local()
+local.BITOPS_KEYS = defaultdict(set)
 
 
 class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
@@ -541,7 +543,8 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
     Base class for bit operations (AND, OR, XOR).
 
     Please note that each bit operation creates a new key prefixed with `trackist_bitop_`.
-    These temporary keys can be deleted with `delete_temporary_bitop_keys`.
+    These temporary keys can be deleted with `delete_temporary_bitop_keys` or
+    `delete_runtime_bitop_keys`.
 
     You can even nest bit operations.
 
@@ -575,7 +578,7 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
 
         self.redis_key = 'trackist_bitop_%s_%s' % (op_name,
                                                    '-'.join(event_redis_keys))
-        BITOPS_KEYS.add((system, self.redis_key))
+        local.BITOPS_KEYS[system].add(self.redis_key)
 
         cli = get_redis(system)
         cli.bitop(op_name, self.redis_key, *event_redis_keys)
