@@ -69,7 +69,8 @@ from dateutil.relativedelta import relativedelta
 
 from mako.lookup import TemplateLookup
 
-from bitmapist import WeekEvents, DayEvents, MonthEvents, YearEvents, BitOpAnd
+from bitmapist import (WeekEvents, DayEvents, MonthEvents, YearEvents,
+                       BitOpAnd, delete_runtime_bitop_keys)
 
 
 # --- HTML rendering
@@ -221,10 +222,6 @@ def get_dates_data(select1, select1b, select2, select2b,
             select1_events = BitOpAnd(system, select1_events, select1b_events)
 
         select1_count = len(select1_events)
-        # clean up results of BitOps
-        if isinstance(select1_events, BitOpAnd):
-            select1_events.delete()
-
         result.append(select1_count)
 
         # Move in time
@@ -248,11 +245,6 @@ def get_dates_data(select1, select1b, select2, select2b,
             both_events = BitOpAnd(system, select1_events, select2_events)
             both_count = len(both_events)
 
-            # clean up results of BitOps
-            both_events.delete()
-            if isinstance(select2_events, BitOpAnd):
-                select2_events.delete()
-
             # Append to result
             if both_count == 0:
                 result.append(float(0.0))
@@ -264,6 +256,9 @@ def get_dates_data(select1, select1b, select2, select2b,
 
         dates.append(result)
         now = now + timedelta_inc(1)
+
+    # clean up results of BitOps
+    delete_runtime_bitop_keys()
 
     return dates
 

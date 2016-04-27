@@ -81,10 +81,13 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 """
 from builtins import range, bytes
 
+import threading
 import redis
 import calendar
+from collections import defaultdict
 from datetime import datetime, date, timedelta
 
+local_thread = threading.local()
 
 # --- Systems related
 
@@ -224,6 +227,18 @@ def delete_temporary_bitop_keys(system='default'):
     keys = cli.keys('trackist_bitop_*')
     if len(keys) > 0:
         cli.delete(*keys)
+
+
+def delete_runtime_bitop_keys():
+    """
+    Delete all BitOp keys that were created.
+    """
+    bitop_keys = _bitop_keys()
+    for system in bitop_keys:
+        if len(bitop_keys[system]) > 0:
+            cli = get_redis(system)
+            cli.delete(*bitop_keys[system])
+    bitop_keys.clear()
 
 
 # --- Events
@@ -518,6 +533,7 @@ class HourEvents(GenericPeriodEvents):
 
 # --- Bit operations
 
+
 class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
                    MixinBitOperations):
 
@@ -525,7 +541,8 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
     Base class for bit operations (AND, OR, XOR).
 
     Please note that each bit operation creates a new key prefixed with `trackist_bitop_`.
-    These temporary keys can be deleted with `delete_temporary_bitop_keys`.
+    These temporary keys can be deleted with `delete_temporary_bitop_keys` or
+    `delete_runtime_bitop_keys`.
 
     You can even nest bit operations.
 
@@ -559,6 +576,7 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
 
         self.redis_key = 'trackist_bitop_%s_%s' % (op_name,
                                                    '-'.join(event_redis_keys))
+        _bitop_keys()[system].add(self.redis_key)
 
         cli = get_redis(system)
         cli.bitop(op_name, self.redis_key, *event_redis_keys)
@@ -628,3 +646,12 @@ def iso_to_gregorian(iso_year, iso_week, iso_day):
     "Gregorian calendar date for the given ISO year, week and day"
     year_start = iso_year_start(iso_year)
     return year_start + timedelta(days=iso_day-1, weeks=iso_week-1)
+
+
+def _bitop_keys():
+    """Hold created BitOp keys (per thread)"""
+    v = getattr(local_thread, 'bitop_keys', None)
+    if v is None:
+        v = defaultdict(set)
+        setattr(local_thread, 'bitop_keys', v)
+    return v

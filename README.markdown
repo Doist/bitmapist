@@ -3,8 +3,7 @@
 
 [![Build Status](https://travis-ci.org/Doist/bitmapist.svg?branch=master)](https://travis-ci.org/Doist/bitmapist)
 
-bitmapist: a powerful analytics library for Redis
-=================================================================
+# bitmapist: a powerful analytics library for Redis
 
 This Python library makes it possible to implement real-time, highly scalable analytics that can answer following questions:
 
@@ -36,22 +35,19 @@ If you want to read more about bitmaps please read following:
 
 
 
-Installation
-============
+# Installation
 
 Can be installed very easily via:
 
     $ pip install bitmapist
 
 
-Ports
-=====
+# Ports
 
 * PHP port: https://github.com/jeremyFreeAgent/Bitter
 
 
-Examples
-========
+# Examples
 
 Setting things up:
 
@@ -113,46 +109,6 @@ Get the list of these users (user ids):
 print list(WeekEvents('active', now.year, now.isocalendar()[1]))
 ```
 
-Perform bit operations. How many users that have been active last month are still active this month?
-
-```python
-active_2_months = BitOpAnd(
-    MonthEvents('active', last_month.year, last_month.month),
-    MonthEvents('active', now.year, now.month)
-)
-print len(active_2_months)
-
-# Is 123 active for 2 months?
-assert 123 in active_2_months
-```
-
-Alternatively, you can use standard Python syntax for bitwise operations.
-
-
-```python
-last_month_event = MonthEvents('active', last_month.year, last_month.month)
-this_month_event = MonthEvents('active', now.year, now.month)
-active_two_months = last_month_event & this_month_event
-```
-Operators `&`, `|`, `^` and `~` supported.
-
-Work with nested bit operations (imagine what you can do with this ;-))!
-
-```python
-active_2_months = BitOpAnd(
-    BitOpAnd(
-        MonthEvents('active', last_month.year, last_month.month),
-        MonthEvents('active', now.year, now.month)
-    ),
-    MonthEvents('active', now.year, now.month)
-)
-print len(active_2_months)
-assert 123 in active_2_months
-
-# Delete the temporary AND operation
-active_2_months.delete()
-```
-
 There are special methods `prev` and `next` returning "sibling" events and
 allowing you to walk through events in time without any sophisticated
 iterators. A `delta` method allows you to "jump" forward or backward for
@@ -194,8 +150,82 @@ Additionally you can supply an extra argument to `mark_event` to bypass the defa
 mark_event('active', 123, track_hourly=False)
 ```
 
-bitmapist cohort
-========
+
+### Perform bit operations
+
+How many users that have been active last month are still active this month?
+
+```python
+active_2_months = BitOpAnd(
+    MonthEvents('active', last_month.year, last_month.month),
+    MonthEvents('active', now.year, now.month)
+)
+print len(active_2_months)
+
+# Is 123 active for 2 months?
+assert 123 in active_2_months
+```
+
+Alternatively, you can use standard Python syntax for bitwise operations.
+
+
+```python
+last_month_event = MonthEvents('active', last_month.year, last_month.month)
+this_month_event = MonthEvents('active', now.year, now.month)
+active_two_months = last_month_event & this_month_event
+```
+Operators `&`, `|`, `^` and `~` supported.
+
+Work with nested bit operations (imagine what you can do with this ;-))!
+
+```python
+active_2_months = BitOpAnd(
+    BitOpAnd(
+        MonthEvents('active', last_month.year, last_month.month),
+        MonthEvents('active', now.year, now.month)
+    ),
+    MonthEvents('active', now.year, now.month)
+)
+print len(active_2_months)
+assert 123 in active_2_months
+
+# Delete the temporary AND operation
+active_2_months.delete()
+```
+
+
+### Deleting
+
+If you want to permanently remove marked events for any time period you can use the `delete()` method:
+```python
+last_month_event = MonthEvents('active', last_month.year, last_month.month)
+last_month_event.delete()
+```
+
+If you want to remove all bitmapist events use:
+```python
+bitmapist.delete_all_events()
+```
+
+When using Bit Operations (ie `BitOpAnd`) you can (and probably should) delete the results unless you want them cached. There are different ways to go about this:
+```python
+active_2_months = BitOpAnd(
+    MonthEvents('active', last_month.year, last_month.month),
+    MonthEvents('active', now.year, now.month)
+)
+# Delete the temporary AND operation
+active_2_months.delete()
+
+# delete all bit operations created in runtime up to this point
+bitmapist.delete_runtime_bitop_keys()
+
+# delete all bit operations (slow if you have many millions of keys in Redis)
+bitmapist.delete_temporary_bitop_keys()
+```
+
+
+# bitmapist cohort
+
 With bitmapist cohort you can get a form and a table rendering of the data you keep in bitmapist. If this sounds confusing [please look at Mixpanel](https://mixpanel.com/retention/).
 
 Here's a simple example of how to generate a form and a rendering of the data you have inside bitmapist:
