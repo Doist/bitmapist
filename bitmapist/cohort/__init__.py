@@ -96,22 +96,21 @@ def render_html_form(action_url,
     :param :select2b What is the current selected filter (extra, optional)
 
     """
-    if selections1b is None:
-        selections1b = selections1[:]
-    selections1b.insert(0, ('------', ''))
+    # mandatory
+    selections2 = selections2 or selections1[:]
 
-    if selections2 is None:
-        selections2 = selections1[:]
+    # optional
+    selections1b_c = selections1b[:] if selections1b else selections1[:]
+    selections1b_c.insert(0, ('------', ''))
 
-    if selections2b is None:
-        selections2b = selections2[:]
-    selections2b.insert(0, ('------', ''))
+    selections2b_c = selections2b[:] if selections2b else selections2[:]
+    selections2b_c.insert(0, ('------', ''))
 
     return get_lookup().get_template('form_data.mako').render(
         selections1=selections1,
-        selections1b=selections1b,
+        selections1b=selections1b_c,
         selections2=selections2,
-        selections2b=selections2b,
+        selections2b=selections2b_c,
         time_group=time_group,
         select1=select1,
         select1b=select1b,
