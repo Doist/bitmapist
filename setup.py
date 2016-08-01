@@ -8,14 +8,15 @@
 from setuptools import setup
 
 setup(name='bitmapist',
-      version = '3.98',
+      version='3.98',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
       install_requires=[
           'redis>=2.10.0',
           'python-dateutil',
-          'future>=0.14.3'
+          'future>=0.14.3',
+          'Mako>=1.0.4'
       ],
       classifiers=[
         "Development Status :: 5 - Production/Stable",
