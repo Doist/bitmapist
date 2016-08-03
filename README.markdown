@@ -83,6 +83,14 @@ How many users have been active this week?:
 print len(WeekEvents('active', now.year, now.isocalendar()[1]))
 ```
 
+Iterate over all users active this week:
+
+```python
+for uid in WeekEvents('active'):
+    print uid
+```
+
+
 If you're interested in "current events", you can omit extra `now.whatever`
 arguments. Events will be populated with current time automatically.
 
