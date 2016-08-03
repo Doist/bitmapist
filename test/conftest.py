@@ -29,6 +29,7 @@ def redis_server():
 def setup_redis_for_bitmapist():
     setup_redis('default', 'localhost', 6399)
     setup_redis('default_copy', 'localhost', 6399)
+    setup_redis('db1', 'localhost', 6399, db=1)
 
 
 @pytest.fixture(autouse=True)

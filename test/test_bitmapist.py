@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from bitmapist import mark_event, unmark_event,\
-                      MonthEvents, WeekEvents, DayEvents, HourEvents,\
+                      YearEvents, MonthEvents, WeekEvents, DayEvents, HourEvents,\
                       BitOpAnd, BitOpOr, get_event_names
 
 
@@ -236,3 +236,8 @@ def test_bit_operations_magic():
     assert list(foo | bar) == [1, 2, 3]
     assert list(foo ^ bar) == [1, 3]
     assert list(~foo & bar) == [3]
+
+
+def test_year_events():
+    mark_event('foo', 1, system='db1')
+    assert 1 in YearEvents('foo', system='db1')
