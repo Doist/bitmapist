@@ -343,6 +343,27 @@ class MixinContains:
             return False
 
 
+class UniqueEvents(MixinIter, MixinCounts, MixinContains,
+                   MixinEventsMisc, MixinBitOperations):
+
+    def __init__(self, event_name, system='default'):
+        self.event_name = event_name
+        self.system = system
+        self.redis_key = 'trackist_%s' % event_name
+
+    def mark(self, uuid):
+        get_redis(self.system).setbit(self.redis_key, uuid, 1)
+
+    def unmark(self, uuid):
+        get_redis(self.system).setbit(self.redis_key, uuid, 0)
+
+    def next(self):
+        return self
+
+    def prev(self):
+        return self
+
+
 class GenericPeriodEvents(MixinIter, MixinCounts, MixinContains,
                           MixinEventsMisc, MixinBitOperations):
 

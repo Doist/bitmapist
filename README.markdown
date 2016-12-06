@@ -159,6 +159,55 @@ mark_event('active', 123, track_hourly=False)
 ```
 
 
+### Unique events
+
+Sometimes data of the event makes little or no sense, for example,
+to filter out your premium accounts, or in A/B testing. There is a
+`UniqueEvents` model for this purpose. The model creates only one
+Redis key and doesn't depend on the date.
+
+You can combine unique events with other types of events.
+
+A/B testing example:
+
+```python
+
+active_today = DailyEvents('active')
+a = UniqueEvents('signup_form:classic')
+b = UniqueEvents('signup_form:new')
+
+print "Active users, signed up with classic form", len(active & a)
+print "Active users, signed up with new form", len(active & b)
+```
+
+Generic filter example
+
+```python
+premium = UniqueEvents('premium')
+
+
+def premium_up(uid):
+    # called when user promoted to premium
+    ...
+    premium.mark(uid)
+
+
+def premium_down(uid):
+    # called when user loses the premium status
+    ...
+    premium.unmark(uid)
+
+
+active_today = DailyEvents('active')
+premium = UniqueEvents('premium')
+
+# Add extra Karma for all premium users active today,
+# just because today is a special day
+for uid in premium & active_today:
+    add_extra_karma(uid)
+```
+
+
 ### Perform bit operations
 
 How many users that have been active last month are still active this month?
