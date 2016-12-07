@@ -216,7 +216,7 @@ def mark_unique(event_name, uuid, system='default'):
     Examples::
 
         # Mark id 42 as premium
-        mark_unique_event('premium', 42)
+        mark_unique('premium', 42)
     """
     _mark_unique(event_name, uuid, system, value=1)
 
@@ -236,7 +236,7 @@ def unmark_unique(event_name, uuid, system='default'):
     Examples::
 
         # Mark id 42 as not premium anymore
-        unmark_unique_event('premium', 42)
+        unmark_unique('premium', 42)
     """
     _mark_unique(event_name, uuid, system, value=0)
 
