@@ -183,20 +183,17 @@ print "Active users, signed up with new form", len(active & b)
 Generic filter example
 
 ```python
-premium = UniqueEvents('premium')
-
 
 def premium_up(uid):
     # called when user promoted to premium
     ...
-    premium.mark(uid)
+    mark_unique('premium', uid)
 
 
 def premium_down(uid):
     # called when user loses the premium status
     ...
-    premium.unmark(uid)
-
+    unmark_unique('premium', uid)
 
 active_today = DailyEvents('active')
 premium = UniqueEvents('premium')
@@ -205,6 +202,18 @@ premium = UniqueEvents('premium')
 # just because today is a special day
 for uid in premium & active_today:
     add_extra_karma(uid)
+```
+
+To get the best of two worlds you can mark unique event and regular
+bitmapist events at the same time.
+
+
+```python
+def premium_up(uid):
+    # called when user promoted to premium
+    ...
+    mark_event('premium', uid, track_unique=True)
+
 ```
 
 
