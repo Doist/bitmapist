@@ -40,3 +40,10 @@ def test_ops_with_dates():
 
     assert list(foo & active.prev()) == []
     assert list(foo | active.prev()) == [2, 3]
+
+
+def test_track_unique():
+    bitmapist.mark_event('foo', 1, track_unique=True)
+    bitmapist.mark_event('foo', 2, track_unique=False)
+    assert list(bitmapist.DayEvents('foo')) == [1, 2]
+    assert list(bitmapist.UniqueEvents('foo')) == [1]

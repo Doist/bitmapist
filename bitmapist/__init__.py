@@ -100,6 +100,9 @@ SYSTEMS = {
 # of memory that Redis uses (especially with huge integers)
 TRACK_HOURLY = False
 
+# Should unique events be trackedi as default?
+TRACK_UNIQUE = False
+
 
 def setup_redis(name, host, port, **kw):
     """
@@ -135,7 +138,7 @@ def get_redis(system='default'):
 # --- Events marking and deleting
 
 def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
-               use_pipeline=True):
+               track_unique=None, use_pipeline=True):
     """
     Marks an event for hours, days, weeks and months.
 
@@ -148,6 +151,8 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
         `datetime.utcnow()`
     :param :track_hourly Should hourly stats be tracked, defaults to
         bitmapist.TRACK_HOURLY
+    :param :track_hourly Should unique stats be tracked, defaults to
+        bitmapist.TRACK_UNIQUE
     :param :use_pipeline Boolean flag indicating if the command should use
         pipelines or not. You may want to avoid using pipeline within the
         command if you provide the pipeline object in `system` argument and
@@ -161,18 +166,20 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
         # Mark task completed for id 252
         mark_event('tasks:completed', 252)
     """
-    _mark(event_name, uuid, system, now, track_hourly, use_pipeline, value=1)
+    _mark(event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=1)
 
 
 def unmark_event(event_name, uuid, system='default', now=None, track_hourly=None,
-                 use_pipeline=True):
-    _mark(event_name, uuid, system, now, track_hourly, use_pipeline, value=0)
+                 track_unique=None, use_pipeline=True):
+    _mark(event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=0)
 
 
 def _mark(event_name, uuid, system='default', now=None,
-          track_hourly=None, use_pipeline=True, value=1):
+          track_hourly=None, track_unique=None, use_pipeline=True, value=1):
     if track_hourly is None:
         track_hourly = TRACK_HOURLY
+    if track_unique is None:
+        track_unique = TRACK_UNIQUE
 
     if not now:
         now = datetime.utcnow()
@@ -180,6 +187,8 @@ def _mark(event_name, uuid, system='default', now=None,
     obj_classes = [MonthEvents, WeekEvents, DayEvents]
     if track_hourly:
         obj_classes.append(HourEvents)
+    if track_unique:
+        obj_classes.append(UniqueEvents)
 
     client = get_redis(system)
     if use_pipeline:
@@ -345,6 +354,10 @@ class MixinContains:
 
 class UniqueEvents(MixinIter, MixinCounts, MixinContains,
                    MixinEventsMisc, MixinBitOperations):
+
+    @classmethod
+    def from_date(cls, event_name, dt=None, system='default'):
+        return cls(event_name, system=system)
 
     def __init__(self, event_name, system='default'):
         self.event_name = event_name
