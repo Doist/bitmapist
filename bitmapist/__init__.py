@@ -100,7 +100,7 @@ SYSTEMS = {
 # of memory that Redis uses (especially with huge integers)
 TRACK_HOURLY = False
 
-# Should unique events be trackedi as default?
+# Should unique events be tracked as default?
 TRACK_UNIQUE = False
 
 
@@ -151,7 +151,7 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
         `datetime.utcnow()`
     :param :track_hourly Should hourly stats be tracked, defaults to
         bitmapist.TRACK_HOURLY
-    :param :track_hourly Should unique stats be tracked, defaults to
+    :param :track_unique Should unique stats be tracked, defaults to
         bitmapist.TRACK_UNIQUE
     :param :use_pipeline Boolean flag indicating if the command should use
         pipelines or not. You may want to avoid using pipeline within the
@@ -199,6 +199,50 @@ def _mark(event_name, uuid, system='default', now=None,
 
     if use_pipeline:
         client.execute()
+
+
+def mark_unique(event_name, uuid, system='default'):
+    """
+    Mark unique event
+
+    Unique event (aka "user flag") is an event which doesn't depend on date.
+    Can be used for storing user properties, A/B testing, extra filtering, etc.
+
+    :param :event_name The name of the event, could be "active" or "new_signups"
+    :param :uuid An unique id, typically user id. The id should not be huge,
+        read Redis documentation why (bitmaps)
+    :param :system The Redis system to use (string, Redis instance, or Pipeline
+
+    Examples::
+
+        # Mark id 42 as premium
+        mark_unique_event('premium', 42)
+    """
+    _mark_unique(event_name, uuid, system, value=1)
+
+
+def unmark_unique(event_name, uuid, system='default'):
+    """
+    Unmark unique event
+
+    Unique event (aka "user flag") is an event which doesn't depend on date.
+    Can be used for storing user properties, A/B testing, extra filtering, etc.
+
+    :param :event_name The name of the event, could be "active" or "new_signups"
+    :param :uuid An unique id, typically user id. The id should not be huge,
+        read Redis documentation why (bitmaps)
+    :param :system The Redis system to use (string, Redis instance, or Pipeline
+
+    Examples::
+
+        # Mark id 42 as not premium anymore
+        unmark_unique_event('premium', 42)
+    """
+    _mark_unique(event_name, uuid, system, value=0)
+
+
+def _mark_unique(event_name, uuid, system='default', value=1):
+    get_redis(system).setbit(UniqueEvents(event_name).redis_key, uuid, value)
 
 
 def get_event_names(system='default', prefix='', batch=10000):
@@ -362,13 +406,7 @@ class UniqueEvents(MixinIter, MixinCounts, MixinContains,
     def __init__(self, event_name, system='default'):
         self.event_name = event_name
         self.system = system
-        self.redis_key = 'trackist_%s' % event_name
-
-    def mark(self, uuid):
-        get_redis(self.system).setbit(self.redis_key, uuid, 1)
-
-    def unmark(self, uuid):
-        get_redis(self.system).setbit(self.redis_key, uuid, 0)
+        self.redis_key = _prefix_key(event_name, 'u')
 
     def next(self):
         return self
