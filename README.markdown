@@ -18,7 +18,7 @@ This Python library makes it possible to implement real-time, highly scalable an
 This library is very easy to use and enables you to create your own reports easily.
 
 Using Redis bitmaps you can store events for millions of users in a very little amount of memory (megabytes).
-You should be careful about using huge ids (e.g. 2^32 or bigger) as this could require larger amounts of memory.
+You should be careful about using huge ids as this could require larger amounts of memory. Ids should be in range [0, 2^32).
 
 Additionally bitmapist can generate cohort graphs that can do following:
 * Cohort over user retention
