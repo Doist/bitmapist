@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/Doist/bitmapist.svg?branch=master)](https://travis-ci.org/Doist/bitmapist)
 
-** NEW! ** Try out our new standalone [bitmapist-server](https://github.com/Doist/bitmapist-server), which improves memory efficiency 443 times and makes your setup much cheaper to run (and more scaleable). It's fully compatiable with bitmapist that runs on Redis.
+**NEW!** Try out our new standalone [bitmapist-server](https://github.com/Doist/bitmapist-server), which improves memory efficiency 443 times and makes your setup much cheaper to run (and more scaleable). It's fully compatiable with bitmapist that runs on Redis.
 
 # bitmapist: a powerful analytics library for Redis
 
