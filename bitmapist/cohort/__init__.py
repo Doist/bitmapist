@@ -265,14 +265,35 @@ def get_dates_data(select1, select1b, select2, select2b,
 # --- Custom handlers
 
 CUSTOM_HANDLERS = {}
+
+
 def set_custom_handler(event_name, callback):
     """
-    Set a custom handelr for `event_name`.
+    Set a custom handler for `event_name`.
     This makes it possible to consturct event names that are complex
     (for example looking at active & (web | ios)).
 
     The signature of `callback` is callback(key, cls, cls_args)
-    Where cls is DayEvents, WeekEvents, MonthEvents or YearEvents.
+    Where cls is DayEvents, WeekEvents, MonthEvents or YearEvents and
+    cls_args is the list of arguments to pass to `cls` constructor.
+
+    For example, the code for a custom handler for all active accounts
+    using web or ios, could look like::
+
+        def active_web_ios(key, cls, cls_args):
+            return cls('active', *cls_args) & (cls('web', *cls_args) | cls('ios', *cls_args))
+
+        set_custom_handler('active_web_ios', active_web_ios)
+
+    And then use something like::
+
+        bitmapist_cohort.render_html_form(
+            selections1=[
+                ...,
+                ('Active on web or iOS', 'active_web_ios')
+            ],
+            ...
+        )
     """
     CUSTOM_HANDLERS[event_name] = callback
 
