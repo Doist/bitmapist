@@ -92,7 +92,7 @@ local_thread = threading.local()
 # --- Systems related
 
 SYSTEMS = {
-    'default': redis.Redis(host='localhost', port=6379)
+    'default': redis.StrictRedis(host='localhost', port=6379)
 }
 
 # Should hourly be tracked as default?
@@ -111,7 +111,7 @@ def setup_redis(name, host, port, **kw):
     :param :name The name of the system
     :param :host The host of the redis installation
     :param :port The port of the redis installation
-    :param :**kw Any additional keyword arguments will be passed to `redis.Redis`.
+    :param :**kw Any additional keyword arguments will be passed to `redis.StrictRedis`.
 
     Example::
 
@@ -119,14 +119,14 @@ def setup_redis(name, host, port, **kw):
 
         mark_event('active', 1, system='stats_redis')
     """
-    SYSTEMS[name] = redis.Redis(host=host, port=port, **kw)
+    SYSTEMS[name] = redis.StrictRedis(host=host, port=port, **kw)
 
 
 def get_redis(system='default'):
     """
     Get a redis-py client instance with entry `system`.
 
-    :param :system The name of the system, redis.Redis or redis.Pipeline
+    :param :system The name of the system, redis.StrictRedis or redis.Pipeline
         instance, extra systems can be setup via `setup_redis`
     """
     if isinstance(system, redis.StrictRedis):
