@@ -119,7 +119,8 @@ def setup_redis(name, host, port, **kw):
 
         mark_event('active', 1, system='stats_redis')
     """
-    SYSTEMS[name] = redis.StrictRedis(host=host, port=port, **kw)
+    redis_client = kw.pop('redis_client', redis.StrictRedis)
+    SYSTEMS[name] = redis_client(host=host, port=port, **kw)
 
 
 def get_redis(system='default'):
