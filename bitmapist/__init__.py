@@ -310,10 +310,9 @@ class MixinIter:
 
         val = bytes(val)
 
-        zero = chr(0)
         for char_num, char in enumerate(val):
             # shortcut
-            if char == zero:
+            if char == 0:
                 continue
             # find set bits, generate smth like [1, 0, ...]
             bits = [(char >> i) & 1 for i in range(7, -1, -1)]
