@@ -82,14 +82,14 @@ assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 How many users have been active this week?:
 
 ```python
-print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+print(len(WeekEvents('active', now.year, now.isocalendar()[1])))
 ```
 
 Iterate over all users active this week:
 
 ```python
 for uid in WeekEvents('active'):
-    print uid
+    print(uid)
 ```
 
 
@@ -116,7 +116,7 @@ MonthEvents('active').from_date(now) == MonthEvents('active', now.year, now.mont
 Get the list of these users (user ids):
 
 ```python
-print list(WeekEvents('active', now.year, now.isocalendar()[1]))
+print(list(WeekEvents('active', now.year, now.isocalendar()[1])))
 ```
 
 There are special methods `prev` and `next` returning "sibling" events and
@@ -178,8 +178,8 @@ active_today = DailyEvents('active')
 a = UniqueEvents('signup_form:classic')
 b = UniqueEvents('signup_form:new')
 
-print "Active users, signed up with classic form", len(active & a)
-print "Active users, signed up with new form", len(active & b)
+print("Active users, signed up with classic form", len(active & a))
+print("Active users, signed up with new form", len(active & b))
 ```
 
 Generic filter example
@@ -228,7 +228,7 @@ active_2_months = BitOpAnd(
     MonthEvents('active', last_month.year, last_month.month),
     MonthEvents('active', now.year, now.month)
 )
-print len(active_2_months)
+print(len(active_2_months))
 
 # Is 123 active for 2 months?
 assert 123 in active_2_months
@@ -254,7 +254,7 @@ active_2_months = BitOpAnd(
     ),
     MonthEvents('active', now.year, now.month)
 )
-print len(active_2_months)
+print(len(active_2_months))
 assert 123 in active_2_months
 
 # Delete the temporary AND operation
@@ -305,7 +305,7 @@ html_form = cohort.render_html_form(
     selections1=[ ('Are Active', 'user:active'), ],
     selections2=[ ('Task completed', 'task:complete'), ]
 )
-print html_form
+print(html_form)
 
 dates_data = cohort.get_dates_data(select1='user:active',
                                    select2='task:complete',
@@ -314,7 +314,7 @@ dates_data = cohort.get_dates_data(select1='user:active',
 html_data = cohort.render_html_data(dates_data,
                                     time_group='days')
 
-print html_data
+print(html_data)
 
 # All the arguments should come from the FORM element (html_form)
 # but to make things more clear I have filled them in directly
