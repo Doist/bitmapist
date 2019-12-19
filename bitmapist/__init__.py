@@ -269,7 +269,7 @@ def delete_all_events(system='default'):
     """
     cli = get_redis(system)
     keys = cli.keys('trackist_*')
-    if len(keys) > 0:
+    if keys:
         cli.delete(*keys)
 
 
@@ -279,7 +279,7 @@ def delete_temporary_bitop_keys(system='default'):
     """
     cli = get_redis(system)
     keys = cli.keys('trackist_bitop_*')
-    if len(keys) > 0:
+    if keys:
         cli.delete(*keys)
 
 
