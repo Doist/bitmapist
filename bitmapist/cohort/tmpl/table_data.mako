@@ -96,9 +96,8 @@
                 total = 0.0
                 for row_data in dates_data:
                     prct = row_data[i]
-                    if prct:
-                        cnts += 1
-                        total += prct
+                    cnts += 1
+                    total += prct
 
                 if cnts > 0:
                     avg = total / cnts
