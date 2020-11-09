@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='bitmapist',
-      version='3.101',
+      version='3.102',
       author="amix",
       author_email="amix@amix.dk",
       url="http://www.amix.dk/",
