@@ -46,7 +46,7 @@
 
     %for row_data in dates_data:
         <tr>
-            <td> 
+            <td>
                 <div class="date">
                     %if time_group == 'months':
                         ${ row_data[0].strftime('%d %b') }
@@ -97,7 +97,8 @@
                 for row_data in dates_data:
                     prct = row_data[i]
                     cnts += 1
-                    total += prct
+                    if prct:
+                        total += prct
 
                 if cnts > 0:
                     avg = total / cnts
