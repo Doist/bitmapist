@@ -104,16 +104,16 @@
                         total += data_entry
 
                 if counts > 0:
-                    avarage = total / counts
+                    average = total / counts
                 else:
-                    avarage = 0
+                    average = 0
             %>
 
             <td class="avg_row">
                 %if as_precent:
-                    ${ round(avarage, 2) }%
+                    ${ round(average, 2) }%
                 %else:
-                    ${ int(avarage) }
+                    ${ int(average) }
                 %endif
             </td>
         %endfor
