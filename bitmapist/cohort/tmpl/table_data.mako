@@ -65,20 +65,21 @@
 
             %for i in range(2, num_of_rows+3):
                 <%
-                prct = row_data[i]
+                data_entry = row_data[i]
                 %>
 
-                %if prct != '':
+                ## '' denotes no entry
+                %if data_entry != '':
                     %if as_precent:
                         <%
-                        color = 'hsla(200, 100%%, 0%%, %s);' % (round(float(prct/100)+0.5, 1))
+                        color = 'hsla(200, 100%%, 0%%, %s);' % (round(float(data_entry/100)+0.5, 1))
                         %>
-                        <td style="background-color: hsla(200, 80%, 50%, ${ round(float(prct/100), 1) }); color: ${ color }">
-                            ${ round(prct, 2) }%
+                        <td style="background-color: hsla(200, 80%, 50%, ${ round(float(data_entry/100), 1) }); color: ${ color }">
+                            ${ round(data_entry, 2) }%
                         </td>
                     %else:
                         <td>
-                            ${ int(prct) }
+                            ${ int(data_entry) }
                         </td>
                     %endif
                 %else:
@@ -92,25 +93,27 @@
         <td class="avg_row"></td>
         %for i in range(2, num_of_rows+3):
             <%
-                cnts = 0
+                counts = 0
                 total = 0.0
                 for row_data in dates_data:
-                    prct = row_data[i]
-                    cnts += 1
-                    if prct:
-                        total += prct
+                    data_entry = row_data[i]
 
-                if cnts > 0:
-                    avg = total / cnts
+                    # '' denotes no entry
+                    if data_entry != '':
+                        counts += 1
+                        total += data_entry
+
+                if counts > 0:
+                    avarage = total / counts
                 else:
-                    avg = 0
+                    avarage = 0
             %>
 
             <td class="avg_row">
                 %if as_precent:
-                    ${ round(avg, 2) }%
+                    ${ round(avarage, 2) }%
                 %else:
-                    ${ int(avg) }
+                    ${ int(avarage) }
                 %endif
             </td>
         %endfor
