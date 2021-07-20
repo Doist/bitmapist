@@ -89,7 +89,7 @@ def render_html_form(action_url,
     :param :selections1b Extra selections, used with the first selection, example `[ ('in US', 'country:US'), ]`
     :param :selections2 A list of selections that the user can filter by, example `[ ('Played song', 'song:play'), ]`
     :param :selections2b Extra selections, used with the second selection, example `[ ('Playlist', 'playlist:new'), ]`
-    :param :time_group What data should be clustred by, can be `days`, `weeks`, `months`, `years`
+    :param :time_group What data should be clustered by, can be `days`, `weeks`, `months`, `years`
     :param :select1 What is the current selected filter (first)
     :param :select1b What is the current selected filter (extra, optional)
     :param :select2 What is the current selected filter (second)
@@ -172,7 +172,7 @@ def get_dates_data(select1, select1b, select2, select2b,
     :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     :param :system What bitmapist should be used?
     :param :as_precent If `True` then percents as calculated and shown. Defaults to `True`
-    :return A list of day data, formated like `[[datetime, count], ...]`
+    :return A list of day data, formatted like `[[datetime, count], ...]`
     """
     num_results = int(num_results)
     num_of_rows = int(num_of_rows)
@@ -270,7 +270,7 @@ CUSTOM_HANDLERS = {}
 def set_custom_handler(event_name, callback):
     """
     Set a custom handler for `event_name`.
-    This makes it possible to consturct event names that are complex
+    This makes it possible to construct event names that are complex
     (for example looking at active & (web | ios)).
 
     The signature of `callback` is callback(key, cls, cls_args)
