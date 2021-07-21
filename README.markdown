@@ -11,7 +11,7 @@ This Python library makes it possible to implement real-time, highly scalable an
 
 * Has user 123 been online today? This week? This month?
 * Has user 123 performed action "X"?
-* How many users have been active have this month? This hour?
+* How many users have been active this month? This hour?
 * How many unique users have performed action "X" this week?
 * How many % of users that were active last week are still active?
 * How many % of users that were active last month are still active this month?
