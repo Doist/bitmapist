@@ -80,7 +80,7 @@ def render_html_form(action_url,
                      selections2=None, selections2b=None,
                      time_group='days',
                      select1=None, select1b=None, select2=None, select2b=None,
-                     as_precent=1, num_results=25, num_of_rows=12):
+                     as_precent=1, num_results=30, num_of_rows=12):
     """
     Render a HTML form that can be used to query the data in bitmapist.
 
@@ -125,7 +125,7 @@ def render_html_form(action_url,
 
 def render_html_data(dates_data,
                      as_precent=True, time_group='days',
-                     num_results=25, num_of_rows=12):
+                     num_results=30, num_of_rows=12):
     """
     Render's data as HTML, inside a TABLE element.
 
@@ -144,7 +144,7 @@ def render_html_data(dates_data,
 
 def render_csv_data(dates_data,
                     as_precent=True, time_group='days',
-                    num_results=25, num_of_rows=12):
+                    num_results=30, num_of_rows=12):
     """
     Render's data as CSV.
     """
@@ -161,7 +161,7 @@ def render_csv_data(dates_data,
 
 def get_dates_data(select1, select1b, select2, select2b,
                    time_group='days', system='default',
-                   as_precent=1, num_results=25, num_of_rows=12):
+                   as_precent=1, num_results=30, num_of_rows=12):
     """
     Fetch the data from bitmapist.
 
