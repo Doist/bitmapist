@@ -46,14 +46,14 @@
         <dd>
             Number of results:
             <select name="num_results">
-                <option value="7" ${ 'selected="selected"' if num_results == 7 else '' }>5</option>
-                <option value="30" ${ 'selected="selected"' if num_results == 30 else '' }>5</option>
+                <option value="7" ${ 'selected="selected"' if num_results == 7 else '' }>7</option>
+                <option value="30" ${ 'selected="selected"' if num_results == 30 else '' }>30</option>
                 <option value="" disabled="disabled">----</option>
-                <option value="12" ${ 'selected="selected"' if num_results == 12 else '' }>5</option>
-                <option value="24" ${ 'selected="selected"' if num_results == 24 else '' }>5</option>
+                <option value="12" ${ 'selected="selected"' if num_results == 12 else '' }>12</option>
+                <option value="24" ${ 'selected="selected"' if num_results == 24 else '' }>24</option>
                 <option value="" disabled="disabled">----</option>
-                <option value="52" ${ 'selected="selected"' if num_results == 52 else '' }>5</option>
-                <option value="104" ${ 'selected="selected"' if num_results == 104 else '' }>5</option>
+                <option value="52" ${ 'selected="selected"' if num_results == 52 else '' }>52</option>
+                <option value="104" ${ 'selected="selected"' if num_results == 104 else '' }>104</option>
             </select>
         </dd>
 
