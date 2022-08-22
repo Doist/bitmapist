@@ -91,9 +91,7 @@ local_thread = threading.local()
 
 # --- Systems related
 
-SYSTEMS = {
-    'default': redis.StrictRedis(host='localhost', port=6379)
-}
+SYSTEMS = {"default": redis.StrictRedis(host="localhost", port=6379)}
 
 # Should hourly be tracked as default?
 # Note that this can have huge implications in amounts
@@ -119,11 +117,11 @@ def setup_redis(name, host, port, **kw):
 
         mark_event('active', 1, system='stats_redis')
     """
-    redis_client = kw.pop('redis_client', redis.StrictRedis)
+    redis_client = kw.pop("redis_client", redis.StrictRedis)
     SYSTEMS[name] = redis_client(host=host, port=port, **kw)
 
 
-def get_redis(system='default'):
+def get_redis(system="default"):
     """
     Get a redis-py client instance with entry `system`.
 
@@ -138,8 +136,16 @@ def get_redis(system='default'):
 
 # --- Events marking and deleting
 
-def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
-               track_unique=None, use_pipeline=True):
+
+def mark_event(
+    event_name,
+    uuid,
+    system="default",
+    now=None,
+    track_hourly=None,
+    track_unique=None,
+    use_pipeline=True,
+):
     """
     Marks an event for hours, days, weeks and months.
 
@@ -167,16 +173,35 @@ def mark_event(event_name, uuid, system='default', now=None, track_hourly=None,
         # Mark task completed for id 252
         mark_event('tasks:completed', 252)
     """
-    _mark(event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=1)
+    _mark(
+        event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=1
+    )
 
 
-def unmark_event(event_name, uuid, system='default', now=None, track_hourly=None,
-                 track_unique=None, use_pipeline=True):
-    _mark(event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=0)
+def unmark_event(
+    event_name,
+    uuid,
+    system="default",
+    now=None,
+    track_hourly=None,
+    track_unique=None,
+    use_pipeline=True,
+):
+    _mark(
+        event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=0
+    )
 
 
-def _mark(event_name, uuid, system='default', now=None,
-          track_hourly=None, track_unique=None, use_pipeline=True, value=1):
+def _mark(
+    event_name,
+    uuid,
+    system="default",
+    now=None,
+    track_hourly=None,
+    track_unique=None,
+    use_pipeline=True,
+    value=1,
+):
     if track_hourly is None:
         track_hourly = TRACK_HOURLY
     if track_unique is None:
@@ -202,7 +227,7 @@ def _mark(event_name, uuid, system='default', now=None,
         client.execute()
 
 
-def mark_unique(event_name, uuid, system='default'):
+def mark_unique(event_name, uuid, system="default"):
     """
     Mark unique event
 
@@ -222,7 +247,7 @@ def mark_unique(event_name, uuid, system='default'):
     _mark_unique(event_name, uuid, system, value=1)
 
 
-def unmark_unique(event_name, uuid, system='default'):
+def unmark_unique(event_name, uuid, system="default"):
     """
     Unmark unique event
 
@@ -242,43 +267,43 @@ def unmark_unique(event_name, uuid, system='default'):
     _mark_unique(event_name, uuid, system, value=0)
 
 
-def _mark_unique(event_name, uuid, system='default', value=1):
+def _mark_unique(event_name, uuid, system="default", value=1):
     get_redis(system).setbit(UniqueEvents(event_name).redis_key, uuid, value)
 
 
-def get_event_names(system='default', prefix='', batch=10000):
+def get_event_names(system="default", prefix="", batch=10000):
     """
     Return the list of all event names, with no particular order. Optional
     `prefix` value is used to filter only subset of keys
     """
     cli = get_redis(system)
-    expr = 'trackist_%s*' % prefix
+    expr = "trackist_%s*" % prefix
     ret = set()
     for result in cli.scan_iter(match=expr, count=batch):
         result = result.decode()
-        chunks = result.split('_')
-        event_name = '_'.join(chunks[1:-1])
-        if not event_name.startswith('bitop_'):
+        chunks = result.split("_")
+        event_name = "_".join(chunks[1:-1])
+        if not event_name.startswith("bitop_"):
             ret.add(event_name)
     return list(ret)
 
 
-def delete_all_events(system='default'):
+def delete_all_events(system="default"):
     """
     Delete all events from the database.
     """
     cli = get_redis(system)
-    keys = cli.keys('trackist_*')
+    keys = cli.keys("trackist_*")
     if keys:
         cli.delete(*keys)
 
 
-def delete_temporary_bitop_keys(system='default'):
+def delete_temporary_bitop_keys(system="default"):
     """
     Delete all temporary keys that are used when using bit operations.
     """
     cli = get_redis(system)
-    keys = cli.keys('trackist_bitop_*')
+    keys = cli.keys("trackist_bitop_*")
     if keys:
         cli.delete(*keys)
 
@@ -297,11 +322,13 @@ def delete_runtime_bitop_keys():
 
 # --- Events
 
+
 class MixinIter:
     """
     Extends with an obj.get_uuids() returning the iterator of uuids in a key
     (unpacks the key)
     """
+
     def get_uuids(self):
         cli = get_redis(self.system)
         val = cli.get(self.redis_key)
@@ -328,7 +355,6 @@ class MixinIter:
 
 
 class MixinBitOperations:
-
     def __invert__(self):
         return BitOpNot(self)
 
@@ -351,6 +377,7 @@ class MixinEventsMisc:
     Extens also with a obj.delete()
     (useful for deleting temporary calculations).
     """
+
     def has_events_marked(self):
         cli = get_redis(self.system)
         return cli.exists(self.redis_key)
@@ -360,7 +387,7 @@ class MixinEventsMisc:
         cli.delete(self.redis_key)
 
     def __eq__(self, other):
-        other_key = getattr(other, 'redis_key', None)
+        other_key = getattr(other, "redis_key", None)
         if other_key is None:
             return NotImplemented
         return self.redis_key == other_key
@@ -371,6 +398,7 @@ class MixinCounts:
     Extends with an obj.get_count() that uses BITCOUNT to
     count all the events. Supports also __len__
     """
+
     def get_count(self):
         cli = get_redis(self.system)
         count = cli.bitcount(self.redis_key)
@@ -388,6 +416,7 @@ class MixinContains:
 
        user_active_today = 123 in DayEvents('active', 2012, 10, 23)
     """
+
     def __contains__(self, uuid):
         cli = get_redis(self.system)
         if cli.getbit(self.redis_key, uuid):
@@ -396,17 +425,17 @@ class MixinContains:
             return False
 
 
-class UniqueEvents(MixinIter, MixinCounts, MixinContains,
-                   MixinEventsMisc, MixinBitOperations):
-
+class UniqueEvents(
+    MixinIter, MixinCounts, MixinContains, MixinEventsMisc, MixinBitOperations
+):
     @classmethod
-    def from_date(cls, event_name, dt=None, system='default'):
+    def from_date(cls, event_name, dt=None, system="default"):
         return cls(event_name, system=system)
 
-    def __init__(self, event_name, system='default'):
+    def __init__(self, event_name, system="default"):
         self.event_name = event_name
         self.system = system
-        self.redis_key = _prefix_key(event_name, 'u')
+        self.redis_key = _prefix_key(event_name, "u")
 
     def next(self):
         return self
@@ -415,15 +444,15 @@ class UniqueEvents(MixinIter, MixinCounts, MixinContains,
         return self
 
 
-class GenericPeriodEvents(MixinIter, MixinCounts, MixinContains,
-                          MixinEventsMisc, MixinBitOperations):
-
+class GenericPeriodEvents(
+    MixinIter, MixinCounts, MixinContains, MixinEventsMisc, MixinBitOperations
+):
     def next(self):
-        """ next object in a datetime line """
+        """next object in a datetime line"""
         return self.delta(value=1)
 
     def prev(self):
-        """ prev object in a datetime line """
+        """prev object in a datetime line"""
         return self.delta(value=-1)
 
 
@@ -435,12 +464,13 @@ class YearEvents(GenericPeriodEvents):
 
         YearEvents('active', 2012)
     """
+
     @classmethod
-    def from_date(cls, event_name, dt=None, system='default'):
+    def from_date(cls, event_name, dt=None, system="default"):
         dt = dt or datetime.utcnow()
         return cls(event_name, dt.year, system=system)
 
-    def __init__(self, event_name, year=None, system='default'):
+    def __init__(self, event_name, year=None, system="default"):
         now = datetime.utcnow()
         self.event_name = event_name
         self.year = not_none(year, now.year)
@@ -470,19 +500,19 @@ class MonthEvents(GenericPeriodEvents):
 
         MonthEvents('active', 2012, 10)
     """
+
     @classmethod
-    def from_date(cls, event_name, dt=None, system='default'):
+    def from_date(cls, event_name, dt=None, system="default"):
         dt = dt or datetime.utcnow()
         return cls(event_name, dt.year, dt.month, system=system)
 
-    def __init__(self, event_name, year=None, month=None, system='default'):
+    def __init__(self, event_name, year=None, month=None, system="default"):
         now = datetime.utcnow()
         self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
         self.system = system
-        self.redis_key = _prefix_key(event_name,
-                                     '%s-%s' % (self.year, self.month))
+        self.redis_key = _prefix_key(event_name, "%s-%s" % (self.year, self.month))
 
     def delta(self, value):
         year, month = add_month(self.year, self.month, value)
@@ -504,20 +534,21 @@ class WeekEvents(GenericPeriodEvents):
 
         WeekEvents('active', 2012, 48)
     """
+
     @classmethod
-    def from_date(cls, event_name, dt=None, system='default'):
+    def from_date(cls, event_name, dt=None, system="default"):
         dt = dt or datetime.utcnow()
         dt_year, dt_week, _ = dt.isocalendar()
         return cls(event_name, dt_year, dt_week, system=system)
 
-    def __init__(self, event_name, year=None, week=None, system='default'):
+    def __init__(self, event_name, year=None, week=None, system="default"):
         now = datetime.utcnow()
         now_year, now_week, _ = now.isocalendar()
         self.event_name = event_name
         self.year = not_none(year, now_year)
         self.week = not_none(week, now_week)
         self.system = system
-        self.redis_key = _prefix_key(event_name, 'W%s-%s' % (self.year, self.week))
+        self.redis_key = _prefix_key(event_name, "W%s-%s" % (self.year, self.week))
 
     def delta(self, value):
         dt = iso_to_gregorian(self.year, self.week + value, 1)
@@ -541,20 +572,22 @@ class DayEvents(GenericPeriodEvents):
 
         DayEvents('active', 2012, 10, 23)
     """
+
     @classmethod
-    def from_date(cls, event_name, dt=None, system='default'):
+    def from_date(cls, event_name, dt=None, system="default"):
         dt = dt or datetime.utcnow()
         return cls(event_name, dt.year, dt.month, dt.day, system=system)
 
-    def __init__(self, event_name, year=None, month=None, day=None, system='default'):
+    def __init__(self, event_name, year=None, month=None, day=None, system="default"):
         now = datetime.utcnow()
         self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
         self.day = not_none(day, now.day)
         self.system = system
-        self.redis_key = _prefix_key(event_name,
-                                     '%s-%s-%s' % (self.year, self.month, self.day))
+        self.redis_key = _prefix_key(
+            event_name, "%s-%s-%s" % (self.year, self.month, self.day)
+        )
 
     def delta(self, value):
         dt = date(self.year, self.month, self.day) + timedelta(days=value)
@@ -575,12 +608,15 @@ class HourEvents(GenericPeriodEvents):
 
         HourEvents('active', 2012, 10, 23, 13)
     """
+
     @classmethod
-    def from_date(cls, event_name, dt=None, system='default'):
+    def from_date(cls, event_name, dt=None, system="default"):
         dt = dt or datetime.utcnow()
         return cls(event_name, dt.year, dt.month, dt.day, dt.hour, system=system)
 
-    def __init__(self, event_name, year=None, month=None, day=None, hour=None, system='default'):
+    def __init__(
+        self, event_name, year=None, month=None, day=None, hour=None, system="default"
+    ):
         now = datetime.utcnow()
         self.event_name = event_name
         self.year = not_none(year, now.year)
@@ -588,13 +624,17 @@ class HourEvents(GenericPeriodEvents):
         self.day = not_none(day, now.day)
         self.hour = not_none(hour, now.hour)
         self.system = system
-        self.redis_key = _prefix_key(event_name,
-                                     '%s-%s-%s-%s' %
-                                     (self.year, self.month, self.day, self.hour))
+        self.redis_key = _prefix_key(
+            event_name, "%s-%s-%s-%s" % (self.year, self.month, self.day, self.hour)
+        )
 
     def delta(self, value):
-        dt = datetime(self.year, self.month, self.day, self.hour) + timedelta(hours=value)
-        return self.__class__(self.event_name, dt.year, dt.month, dt.day, dt.hour, self.system)
+        dt = datetime(self.year, self.month, self.day, self.hour) + timedelta(
+            hours=value
+        )
+        return self.__class__(
+            self.event_name, dt.year, dt.month, dt.day, dt.hour, self.system
+        )
 
     def period_start(self):
         return datetime(self.year, self.month, self.day, self.hour)
@@ -606,8 +646,9 @@ class HourEvents(GenericPeriodEvents):
 # --- Bit operations
 
 
-class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
-                   MixinBitOperations):
+class BitOperation(
+    MixinIter, MixinContains, MixinCounts, MixinEventsMisc, MixinBitOperations
+):
 
     """
     Base class for bit operations (AND, OR, XOR).
@@ -637,17 +678,16 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
 
     def __init__(self, op_name, system_or_event, *events):
         # Smartly resolve system_or_event, makes it possible to build a cleaner API
-        if hasattr(system_or_event, 'redis_key'):
+        if hasattr(system_or_event, "redis_key"):
             events = list(events)
             events.insert(0, system_or_event)
-            system = self.system = 'default'
+            system = self.system = "default"
         else:
             system = self.system = system_or_event
 
         event_redis_keys = [ev.redis_key for ev in events]
 
-        self.redis_key = 'trackist_bitop_%s_%s' % (op_name,
-                                                   '-'.join(event_redis_keys))
+        self.redis_key = "trackist_bitop_%s_%s" % (op_name, "-".join(event_redis_keys))
         _bitop_keys()[system].add(self.redis_key)
 
         cli = get_redis(system)
@@ -655,36 +695,34 @@ class BitOperation(MixinIter, MixinContains, MixinCounts, MixinEventsMisc,
 
 
 class BitOpAnd(BitOperation):
-
     def __init__(self, system_or_event, *events):
-        BitOperation.__init__(self, 'AND', system_or_event, *events)
+        BitOperation.__init__(self, "AND", system_or_event, *events)
 
 
 class BitOpOr(BitOperation):
-
     def __init__(self, system_or_event, *events):
-        BitOperation.__init__(self, 'OR', system_or_event, *events)
+        BitOperation.__init__(self, "OR", system_or_event, *events)
 
 
 class BitOpXor(BitOperation):
-
     def __init__(self, system_or_event, *events):
-        BitOperation.__init__(self, 'XOR', system_or_event, *events)
+        BitOperation.__init__(self, "XOR", system_or_event, *events)
 
 
 class BitOpNot(BitOperation):
-
     def __init__(self, system_or_event, *events):
-        BitOperation.__init__(self, 'NOT', system_or_event, *events)
+        BitOperation.__init__(self, "NOT", system_or_event, *events)
 
 
 # --- Private
 
+
 def _prefix_key(event_name, date):
-    return 'trackist_%s_%s' % (event_name, date)
+    return "trackist_%s_%s" % (event_name, date)
 
 
 # --- Helper functions
+
 
 def add_month(year, month, delta):
     """
@@ -710,20 +748,20 @@ def not_none(*keys):
 def iso_year_start(iso_year):
     "The gregorian calendar date of the first day of the given ISO year"
     fourth_jan = date(iso_year, 1, 4)
-    delta = timedelta(fourth_jan.isoweekday()-1)
+    delta = timedelta(fourth_jan.isoweekday() - 1)
     return fourth_jan - delta
 
 
 def iso_to_gregorian(iso_year, iso_week, iso_day):
     "Gregorian calendar date for the given ISO year, week and day"
     year_start = iso_year_start(iso_year)
-    return year_start + timedelta(days=iso_day-1, weeks=iso_week-1)
+    return year_start + timedelta(days=iso_day - 1, weeks=iso_week - 1)
 
 
 def _bitop_keys():
     """Hold created BitOp keys (per thread)"""
-    v = getattr(local_thread, 'bitop_keys', None)
+    v = getattr(local_thread, "bitop_keys", None)
     if v is None:
         v = defaultdict(set)
-        setattr(local_thread, 'bitop_keys', v)
+        setattr(local_thread, "bitop_keys", v)
     return v

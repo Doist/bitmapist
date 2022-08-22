@@ -69,18 +69,34 @@ from dateutil.relativedelta import relativedelta
 
 from mako.lookup import TemplateLookup
 
-from bitmapist import (WeekEvents, DayEvents, MonthEvents, YearEvents,
-                       BitOpAnd, delete_runtime_bitop_keys)
+from bitmapist import (
+    WeekEvents,
+    DayEvents,
+    MonthEvents,
+    YearEvents,
+    BitOpAnd,
+    delete_runtime_bitop_keys,
+)
 
 
 # --- HTML rendering
 
-def render_html_form(action_url,
-                     selections1, selections1b=None,
-                     selections2=None, selections2b=None,
-                     time_group='days',
-                     select1=None, select1b=None, select2=None, select2b=None,
-                     as_precent=1, num_results=30, num_of_rows=12):
+
+def render_html_form(
+    action_url,
+    selections1,
+    selections1b=None,
+    selections2=None,
+    selections2b=None,
+    time_group="days",
+    select1=None,
+    select1b=None,
+    select2=None,
+    select2b=None,
+    as_precent=1,
+    num_results=30,
+    num_of_rows=12,
+):
     """
     Render a HTML form that can be used to query the data in bitmapist.
 
@@ -101,31 +117,35 @@ def render_html_form(action_url,
 
     # optional
     selections1b_c = selections1b[:] if selections1b else selections1[:]
-    selections1b_c.insert(0, ('------', ''))
+    selections1b_c.insert(0, ("------", ""))
 
     selections2b_c = selections2b[:] if selections2b else selections2[:]
-    selections2b_c.insert(0, ('------', ''))
+    selections2b_c.insert(0, ("------", ""))
 
-    return get_lookup().get_template('form_data.mako').render(
-        selections1=selections1,
-        selections1b=selections1b_c,
-        selections2=selections2,
-        selections2b=selections2b_c,
-        time_group=time_group,
-        select1=select1,
-        select1b=select1b,
-        select2=select2,
-        select2b=select2b,
-        action_url=action_url,
-        as_precent=as_precent,
-        num_results=int(num_results),
-        num_of_rows=int(num_of_rows)
+    return (
+        get_lookup()
+        .get_template("form_data.mako")
+        .render(
+            selections1=selections1,
+            selections1b=selections1b_c,
+            selections2=selections2,
+            selections2b=selections2b_c,
+            time_group=time_group,
+            select1=select1,
+            select1b=select1b,
+            select2=select2,
+            select2b=select2b,
+            action_url=action_url,
+            as_precent=as_precent,
+            num_results=int(num_results),
+            num_of_rows=int(num_of_rows),
+        )
     )
 
 
-def render_html_data(dates_data,
-                     as_precent=True, time_group='days',
-                     num_results=30, num_of_rows=12):
+def render_html_data(
+    dates_data, as_precent=True, time_group="days", num_results=30, num_of_rows=12
+):
     """
     Render's data as HTML, inside a TABLE element.
 
@@ -133,36 +153,52 @@ def render_html_data(dates_data,
     :param :as_precent Should the data be shown as percents or as counts. Defaults to `True`
     :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     """
-    return get_lookup().get_template('table_data.mako').render(
-        dates_data=dates_data,
-        as_precent=as_precent,
-        time_group=time_group,
-        num_results=num_results,
-        num_of_rows=num_of_rows
+    return (
+        get_lookup()
+        .get_template("table_data.mako")
+        .render(
+            dates_data=dates_data,
+            as_precent=as_precent,
+            time_group=time_group,
+            num_results=num_results,
+            num_of_rows=num_of_rows,
+        )
     )
 
 
-def render_csv_data(dates_data,
-                    as_precent=True, time_group='days',
-                    num_results=30, num_of_rows=12):
+def render_csv_data(
+    dates_data, as_precent=True, time_group="days", num_results=30, num_of_rows=12
+):
     """
     Render's data as CSV.
     """
-    return get_lookup().get_template('table_data_csv.mako').render(
-        dates_data=dates_data,
-        as_precent=as_precent,
-        time_group=time_group,
-        num_results=num_results,
-        num_of_rows=num_of_rows
+    return (
+        get_lookup()
+        .get_template("table_data_csv.mako")
+        .render(
+            dates_data=dates_data,
+            as_precent=as_precent,
+            time_group=time_group,
+            num_results=num_results,
+            num_of_rows=num_of_rows,
+        )
     )
 
 
 # --- Data rendering
 
-def get_dates_data(select1, select2,
-                   select1b=None, select2b=None,
-                   time_group='days', system='default',
-                   as_precent=1, num_results=30, num_of_rows=12):
+
+def get_dates_data(
+    select1,
+    select2,
+    select1b=None,
+    select2b=None,
+    time_group="days",
+    system="default",
+    as_precent=1,
+    num_results=30,
+    num_of_rows=12,
+):
     """
     Fetch the data from bitmapist.
 
@@ -179,35 +215,35 @@ def get_dates_data(select1, select2,
     num_of_rows = int(num_of_rows)
 
     # Days
-    if time_group == 'days':
+    if time_group == "days":
         fn_get_events = _day_events_fn
 
         date_range = num_results
-        now = datetime.utcnow() - timedelta(days=num_results-1)
+        now = datetime.utcnow() - timedelta(days=num_results - 1)
         timedelta_inc = lambda d: timedelta(days=d)
     # Weeks
-    elif time_group == 'weeks':
+    elif time_group == "weeks":
         fn_get_events = _weeks_events_fn
 
         date_range = num_results
-        now = datetime.utcnow() - relativedelta(weeks=num_results-1)
+        now = datetime.utcnow() - relativedelta(weeks=num_results - 1)
         timedelta_inc = lambda w: relativedelta(weeks=w)
     # Months
-    elif time_group == 'months':
+    elif time_group == "months":
         fn_get_events = _month_events_fn
 
         date_range = num_results
-        now = datetime.utcnow() - relativedelta(months=num_results-1)
-        now -= timedelta(days=now.day-1)
+        now = datetime.utcnow() - relativedelta(months=num_results - 1)
+        now -= timedelta(days=now.day - 1)
         timedelta_inc = lambda m: relativedelta(months=m)
     # Years
-    elif time_group == 'years':
+    elif time_group == "years":
         fn_get_events = _year_events_fn
 
         num_results = 3
 
         date_range = num_results
-        now = datetime.utcnow() - relativedelta(years=num_results-1)
+        now = datetime.utcnow() - relativedelta(years=num_results - 1)
         timedelta_inc = lambda m: relativedelta(years=m)
 
     dates = []
@@ -225,9 +261,9 @@ def get_dates_data(select1, select2,
         result.append(select1_count)
 
         # Move in time
-        for t_delta in range(0, num_of_rows+1):
+        for t_delta in range(0, num_of_rows + 1):
             if select1_count == 0:
-                result.append('')
+                result.append("")
                 continue
 
             delta_now = now + timedelta_inc(t_delta)
@@ -239,7 +275,7 @@ def get_dates_data(select1, select2,
                 select2_events = BitOpAnd(system, select2_events, select2b_events)
 
             if not select2_events.has_events_marked():
-                result.append('')
+                result.append("")
                 continue
 
             both_events = BitOpAnd(system, select1_events, select2_events)
@@ -301,6 +337,7 @@ def set_custom_handler(event_name, callback):
 
 # --- Private
 
+
 def _dispatch(key, cls, cls_args):
     if key in CUSTOM_HANDLERS:
         return CUSTOM_HANDLERS[key](key, cls, cls_args)
@@ -333,16 +370,18 @@ def _year_events_fn(key, date, system):
 
 
 _LOOKUP = None
+
+
 def get_lookup():
     global _LOOKUP
 
     if not _LOOKUP:
         file_path = path.dirname(path.abspath(__file__))
-        _LOOKUP = TemplateLookup(directories=[path.join(file_path, 'tmpl')],
-                                 encoding_errors='replace')
+        _LOOKUP = TemplateLookup(
+            directories=[path.join(file_path, "tmpl")], encoding_errors="replace"
+        )
 
     return _LOOKUP
 
-__all__ = ['render_html_form',
-           'render_html_data',
-           'get_dates_data']
+
+__all__ = ["render_html_form", "render_html_data", "get_dates_data"]
