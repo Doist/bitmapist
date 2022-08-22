@@ -2,18 +2,19 @@
 
 from setuptools import setup
 
-setup(name='bitmapist',
-      version='3.105',
-      author="amix",
-      author_email="amix@amix.dk",
-      url="http://www.amix.dk/",
-      install_requires=[
-          'redis>=2.10.0',
-          'python-dateutil',
-          'future>=0.14.3',
-          'Mako>=1.0.4'
-      ],
-      classifiers=[
+setup(
+    name="bitmapist",
+    version="3.105",
+    author="amix",
+    author_email="amix@amix.dk",
+    url="http://www.amix.dk/",
+    install_requires=[
+        "redis>=2.10.0",
+        "python-dateutil",
+        "future>=0.14.3",
+        "Mako>=1.0.4",
+    ],
+    classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
@@ -26,15 +27,15 @@ setup(name='bitmapist',
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Topic :: Software Development :: Libraries :: Python Modules",
-      ],
-      packages=['bitmapist', 'bitmapist.cohort'],
-      include_package_data=True,
-      zip_safe=False,
-      platforms=["Any"],
-      license="BSD",
-      keywords='redis bitmap analytics bitmaps realtime cohort',
-      description="Implements a powerful analytics library using Redis bitmaps.",
-      long_description="""\
+    ],
+    packages=["bitmapist", "bitmapist.cohort"],
+    include_package_data=True,
+    zip_safe=False,
+    platforms=["Any"],
+    license="BSD",
+    keywords="redis bitmap analytics bitmaps realtime cohort",
+    description="Implements a powerful analytics library using Redis bitmaps.",
+    long_description="""\
 bitmapist
 ---------------
 Implements a powerful analytics library using Redis bitmaps.
@@ -134,4 +135,5 @@ Copyright: 2012 by Doist Ltd.
 
 Developer: Amir Salihefendic ( http://amix.dk )
 
-License: BSD""")
+License: BSD""",
+)

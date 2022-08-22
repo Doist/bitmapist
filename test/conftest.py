@@ -9,12 +9,12 @@ import time
 from bitmapist import setup_redis, delete_all_events
 
 
-@pytest.yield_fixture(scope='session', autouse=True)
+@pytest.yield_fixture(scope="session", autouse=True)
 def redis_server():
     """
     Fixture starting the Redis server
     """
-    redis_host = '127.0.0.1'
+    redis_host = "127.0.0.1"
     redis_port = 6399
     if is_socket_open(redis_host, redis_port):
         yield None
@@ -25,11 +25,11 @@ def redis_server():
         proc.terminate()
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def setup_redis_for_bitmapist():
-    setup_redis('default', 'localhost', 6399)
-    setup_redis('default_copy', 'localhost', 6399)
-    setup_redis('db1', 'localhost', 6399, db=1)
+    setup_redis("default", "localhost", 6399)
+    setup_redis("default_copy", "localhost", 6399)
+    setup_redis("db1", "localhost", 6399, db=1)
 
 
 @pytest.fixture(autouse=True)
@@ -41,11 +41,15 @@ def start_redis_server(port):
     """
     Helper function starting Redis server
     """
-    devzero = open(os.devnull, 'r')
-    devnull = open(os.devnull, 'w')
-    proc = subprocess.Popen(['/usr/bin/redis-server', '--port', str(port)],
-                            stdin=devzero, stdout=devnull, stderr=devnull,
-                            close_fds=True)
+    devzero = open(os.devnull, "r")
+    devnull = open(os.devnull, "w")
+    proc = subprocess.Popen(
+        ["/usr/bin/redis-server", "--port", str(port)],
+        stdin=devzero,
+        stdout=devnull,
+        stderr=devnull,
+        close_fds=True,
+    )
     atexit.register(lambda: proc.terminate())
     return proc
 
@@ -75,4 +79,4 @@ def wait_for_socket(host, port, seconds=3):
             break
         time.sleep(polling_interval)
     else:
-        raise RuntimeError('Service at %s:%d is unreachable' % (host, port))
+        raise RuntimeError("Service at %s:%d is unreachable" % (host, port))
