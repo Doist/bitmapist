@@ -159,7 +159,8 @@ def render_csv_data(dates_data,
 
 # --- Data rendering
 
-def get_dates_data(select1, select1b, select2, select2b,
+def get_dates_data(select1, select2,
+                   select1b=None, select2b=None,
                    time_group='days', system='default',
                    as_precent=1, num_results=30, num_of_rows=12):
     """
