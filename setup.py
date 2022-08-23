@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="bitmapist",
-    version="3.105",
+    version="3.106",
     author="amix",
     author_email="amix@amix.dk",
     url="http://www.amix.dk/",
