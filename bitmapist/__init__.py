@@ -83,6 +83,8 @@ from builtins import range, bytes
 
 import threading
 import redis
+from typing import Union, Optional
+from redis.client import Redis, Pipeline
 import calendar
 from collections import defaultdict
 from datetime import datetime, date, timedelta
@@ -102,7 +104,7 @@ TRACK_HOURLY = False
 TRACK_UNIQUE = False
 
 
-def setup_redis(name, host, port, **kw):
+def setup_redis(name: str, host: str, port: int, **kw) -> None:
     """
     Setup a redis system.
 
@@ -121,7 +123,7 @@ def setup_redis(name, host, port, **kw):
     SYSTEMS[name] = redis_client(host=host, port=port, **kw)
 
 
-def get_redis(system="default"):
+def get_redis(system: str = "default") -> Union[Redis, Pipeline]:
     """
     Get a redis-py client instance with entry `system`.
 
@@ -138,14 +140,14 @@ def get_redis(system="default"):
 
 
 def mark_event(
-    event_name,
-    uuid,
-    system="default",
-    now=None,
-    track_hourly=None,
-    track_unique=None,
-    use_pipeline=True,
-):
+    event_name: str,
+    uuid: int,
+    system: str = "default",
+    now: Optional[datetime] = None,
+    track_hourly: Optional[bool] = None,
+    track_unique: Optional[bool] = None,
+    use_pipeline: bool = True,
+) -> None:
     """
     Marks an event for hours, days, weeks and months.
 
@@ -179,14 +181,14 @@ def mark_event(
 
 
 def unmark_event(
-    event_name,
-    uuid,
-    system="default",
-    now=None,
-    track_hourly=None,
-    track_unique=None,
-    use_pipeline=True,
-):
+    event_name: str,
+    uuid: int,
+    system: str = "default",
+    now: Optional[datetime] = None,
+    track_hourly: Optional[bool] = None,
+    track_unique: Optional[bool] = None,
+    use_pipeline: bool = True,
+) -> None:
     _mark(
         event_name, uuid, system, now, track_hourly, track_unique, use_pipeline, value=0
     )
@@ -227,7 +229,7 @@ def _mark(
         client.execute()
 
 
-def mark_unique(event_name, uuid, system="default"):
+def mark_unique(event_name: str, uuid: int, system: str = "default") -> None:
     """
     Mark unique event
 
@@ -247,7 +249,7 @@ def mark_unique(event_name, uuid, system="default"):
     _mark_unique(event_name, uuid, system, value=1)
 
 
-def unmark_unique(event_name, uuid, system="default"):
+def unmark_unique(event_name: str, uuid: int, system: str = "default") -> None:
     """
     Unmark unique event
 
@@ -271,7 +273,9 @@ def _mark_unique(event_name, uuid, system="default", value=1):
     get_redis(system).setbit(UniqueEvents(event_name).redis_key, uuid, value)
 
 
-def get_event_names(system="default", prefix="", batch=10000):
+def get_event_names(
+    system: str = "default", prefix: str = "", batch: int = 10000
+) -> list[str]:
     """
     Return the list of all event names, with no particular order. Optional
     `prefix` value is used to filter only subset of keys
@@ -288,7 +292,7 @@ def get_event_names(system="default", prefix="", batch=10000):
     return list(ret)
 
 
-def delete_all_events(system="default"):
+def delete_all_events(system: str = "default") -> None:
     """
     Delete all events from the database.
     """
@@ -298,7 +302,7 @@ def delete_all_events(system="default"):
         cli.delete(*keys)
 
 
-def delete_temporary_bitop_keys(system="default"):
+def delete_temporary_bitop_keys(system: str = "default") -> None:
     """
     Delete all temporary keys that are used when using bit operations.
     """
@@ -308,7 +312,7 @@ def delete_temporary_bitop_keys(system="default"):
         cli.delete(*keys)
 
 
-def delete_runtime_bitop_keys():
+def delete_runtime_bitop_keys() -> None:
     """
     Delete all BitOp keys that were created.
     """
@@ -717,14 +721,14 @@ class BitOpNot(BitOperation):
 # --- Private
 
 
-def _prefix_key(event_name, date):
+def _prefix_key(event_name: str, date: str):
     return "trackist_%s_%s" % (event_name, date)
 
 
 # --- Helper functions
 
 
-def add_month(year, month, delta):
+def add_month(year: int, month: int, delta: int) -> tuple[int, int]:
     """
     Helper function which adds `delta` months to current `(year, month)` tuple
     and returns a new valid tuple `(year, month)`
