@@ -94,8 +94,9 @@ def render_html_form(
     select2=None,
     select2b=None,
     as_precent=1,
-    num_results=30,
+    num_results=31,
     num_of_rows=12,
+    start_date=None,
 ):
     """
     Render a HTML form that can be used to query the data in bitmapist.
@@ -139,12 +140,18 @@ def render_html_form(
             as_precent=as_precent,
             num_results=int(num_results),
             num_of_rows=int(num_of_rows),
+            start_date=start_date,
         )
     )
 
 
 def render_html_data(
-    dates_data, as_precent=True, time_group="days", num_results=30, num_of_rows=12
+    dates_data,
+    as_precent=True,
+    time_group="days",
+    num_results=31,
+    num_of_rows=12,
+    start_date=None,
 ):
     """
     Render's data as HTML, inside a TABLE element.
@@ -162,12 +169,18 @@ def render_html_data(
             time_group=time_group,
             num_results=num_results,
             num_of_rows=num_of_rows,
+            start_date=start_date,
         )
     )
 
 
 def render_csv_data(
-    dates_data, as_precent=True, time_group="days", num_results=30, num_of_rows=12
+    dates_data,
+    as_precent=True,
+    time_group="days",
+    num_results=31,
+    num_of_rows=12,
+    start_date=None,
 ):
     """
     Render's data as CSV.
@@ -181,6 +194,7 @@ def render_csv_data(
             time_group=time_group,
             num_results=num_results,
             num_of_rows=num_of_rows,
+            start_date=start_date,
         )
     )
 
@@ -196,8 +210,9 @@ def get_dates_data(
     time_group="days",
     system="default",
     as_precent=1,
-    num_results=30,
+    num_results=31,
     num_of_rows=12,
+    start_date=None,
 ):
     """
     Fetch the data from bitmapist.
@@ -214,26 +229,32 @@ def get_dates_data(
     num_results = int(num_results)
     num_of_rows = int(num_of_rows)
 
+    if start_date:
+        now = datetime.strptime(start_date, "%Y-%m-%d")
+        now = now + timedelta(days=num_results - 1)
+    else:
+        now = datetime.utcnow()
+
     # Days
     if time_group == "days":
         fn_get_events = _day_events_fn
 
         date_range = num_results
-        now = datetime.utcnow() - timedelta(days=num_results - 1)
+        now = now - timedelta(days=num_results - 1)
         timedelta_inc = lambda d: timedelta(days=d)
     # Weeks
     elif time_group == "weeks":
         fn_get_events = _weeks_events_fn
 
         date_range = num_results
-        now = datetime.utcnow() - relativedelta(weeks=num_results - 1)
+        now = now - relativedelta(weeks=num_results - 1)
         timedelta_inc = lambda w: relativedelta(weeks=w)
     # Months
     elif time_group == "months":
         fn_get_events = _month_events_fn
 
         date_range = num_results
-        now = datetime.utcnow() - relativedelta(months=num_results - 1)
+        now = now - relativedelta(months=num_results - 1)
         now -= timedelta(days=now.day - 1)
         timedelta_inc = lambda m: relativedelta(months=m)
     # Years
@@ -243,7 +264,7 @@ def get_dates_data(
         num_results = 3
 
         date_range = num_results
-        now = datetime.utcnow() - relativedelta(years=num_results - 1)
+        now = now - relativedelta(years=num_results - 1)
         timedelta_inc = lambda m: relativedelta(years=m)
 
     dates = []
