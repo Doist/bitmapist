@@ -47,7 +47,7 @@
             Number of results:
             <select name="num_results">
                 <option value="7" ${ 'selected="selected"' if num_results == 7 else '' }>7</option>
-                <option value="30" ${ 'selected="selected"' if num_results == 30 else '' }>30</option>
+                <option value="31" ${ 'selected="selected"' if num_results == 31 else '' }>31</option>
                 <option value="" disabled="disabled">----</option>
                 <option value="12" ${ 'selected="selected"' if num_results == 12 else '' }>12</option>
                 <option value="24" ${ 'selected="selected"' if num_results == 24 else '' }>24</option>
@@ -64,6 +64,11 @@
                 <option value="24" ${ 'selected="selected"' if num_of_rows == 24 else '' }>24</option>
                 <option value="48" ${ 'selected="selected"' if num_of_rows == 48 else '' }>48</option>
             </select>
+        </dd>
+
+        <dd>
+            Start date:
+            <input name="start_date" type="date" value="${ start_date if start_date else "" | h }" />
         </dd>
     </dl>
 
