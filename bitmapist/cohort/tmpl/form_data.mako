@@ -47,11 +47,13 @@
             Number of results:
             <select name="num_results">
                 <option value="7" ${ 'selected="selected"' if num_results == 7 else '' }>7</option>
+                <option value="28" ${ 'selected="selected"' if num_results == 28 else '' }>28</option>
                 <option value="31" ${ 'selected="selected"' if num_results == 31 else '' }>31</option>
                 <option value="" disabled="disabled">----</option>
                 <option value="12" ${ 'selected="selected"' if num_results == 12 else '' }>12</option>
                 <option value="24" ${ 'selected="selected"' if num_results == 24 else '' }>24</option>
                 <option value="" disabled="disabled">----</option>
+                <option value="4" ${ 'selected="selected"' if num_results == 4 else '' }>4</option>
                 <option value="52" ${ 'selected="selected"' if num_results == 52 else '' }>52</option>
                 <option value="104" ${ 'selected="selected"' if num_results == 104 else '' }>104</option>
             </select>
@@ -60,6 +62,8 @@
         <dd>
             Number of rows:
             <select name="num_of_rows">
+                <option value="3" ${ 'selected="selected"' if num_of_rows == 3 else '' }>3</option>
+                <option value="6" ${ 'selected="selected"' if num_of_rows == 6 else '' }>6</option>
                 <option value="12" ${ 'selected="selected"' if num_of_rows == 12 else '' }>12</option>
                 <option value="24" ${ 'selected="selected"' if num_of_rows == 24 else '' }>24</option>
                 <option value="48" ${ 'selected="selected"' if num_of_rows == 48 else '' }>48</option>
