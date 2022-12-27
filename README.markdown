@@ -163,7 +163,7 @@ mark_event('active', 123, track_hourly=False)
 
 ### Unique events
 
-Sometimes data of the event makes little or no sense, for example,
+Sometimes the date of the event makes little or no sense, for example,
 to filter out your premium accounts, or in A/B testing. There is a
 `UniqueEvents` model for this purpose. The model creates only one
 Redis key and doesn't depend on the date.
