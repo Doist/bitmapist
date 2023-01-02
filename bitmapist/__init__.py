@@ -378,7 +378,7 @@ class MixinEventsMisc:
     that returns `True` if there are any events marked,
     otherwise `False` is returned.
 
-    Extens also with a obj.delete()
+    Extends also with a obj.delete()
     (useful for deleting temporary calculations).
     """
 
