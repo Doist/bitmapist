@@ -408,7 +408,7 @@ class MixinCounts:
         count = cli.bitcount(self.redis_key)
         return count
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.get_count()
 
 
