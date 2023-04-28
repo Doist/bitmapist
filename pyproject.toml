@@ -7,7 +7,7 @@ authors = [
     "Doist Developers <dev@doist.com>",
 ]
 license="BSD"
-readme = "README.markdown"
+readme = "README.md"
 homepage="http://www.amix.dk/"
 repository = "https://github.com/Doist/bitmapist"
 keywords=[ "redis", "bitmap", "analytics", "bitmaps", "realtime", "cohort", ]
@@ -27,7 +27,7 @@ packages=[ { include = "bitmapist" } ]
 exclude = ['tests/']
 include = [
     'AUTHORS',
-    'README.markdown',
+    'README.md',
     'static/bitmapist.png',
     'static/bitmapist.svg',
 ]
