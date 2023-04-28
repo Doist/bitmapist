@@ -7,7 +7,7 @@ authors = [
     "Doist Developers <dev@doist.com>",
 ]
 license="BSD"
-readme = "README.md"
+readme = "README.markdown"
 homepage="http://www.amix.dk/"
 repository = "https://github.com/Doist/bitmapist"
 keywords=[ "redis", "bitmap", "analytics", "bitmaps", "realtime", "cohort", ]
