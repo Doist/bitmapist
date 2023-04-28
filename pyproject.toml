@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "bitmapist"
+version = "3.107"
+description="Implements a powerful analytics library using Redis bitmaps."
+authors = [
+    "Amir Salihefendic <amix@amix.dk>",
+    "Doist Developers <dev@doist.com>",
+]
+license="BSD"
+readme = "README.md"
+homepage="http://www.amix.dk/"
+repository = "https://github.com/Doist/bitmapist"
+keywords=[ "redis", "bitmap", "analytics", "bitmaps", "realtime", "cohort", ]
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+packages=[ { include = "bitmapist" } ]
+exclude = ['tests/']
+include = [
+    'AUTHORS',
+    'README.markdown',
+    'static/bitmapist.png',
+    'static/bitmapist.svg',
+]
+
+[tool.poetry.dependencies]
+python = ">3.8,<3.12"
+redis = "^2.10.0"
+python-dateutil = "*"
+future = "^0.14.3"
+Mako= "^1.0.4"
+
+[tool.poetry.dev-dependencies]
+pytest-runner = "^6.0.0"
+pytest = "^7.1.2"
+pre-commit = "^2.20.0"
+tox = "^3.25.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
