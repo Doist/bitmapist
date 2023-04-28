@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bitmapist"
-version = "3.107"
+version = "3.108"
 description="Implements a powerful analytics library using Redis bitmaps."
 authors = [
     "Amir Salihefendic <amix@amix.dk>",
@@ -18,7 +18,6 @@ classifiers=[
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -34,7 +33,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">3.8,<3.12"
+python = ">3.9,<3.12"
 redis = "^2.10.0"
 python-dateutil = "*"
 future = "^0.14.3"
