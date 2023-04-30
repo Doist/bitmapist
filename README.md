@@ -325,6 +325,41 @@ This will render something similar to this:
 ![bitmapist cohort screenshot](https://raw.githubusercontent.com/Doist/bitmapist/master/static/cohort_screenshot.png "bitmapist cohort screenshot")
 
 
+## Contributing
+
+Please see our guide [here](./CONTRIBUTING.md)
+
+## Local Development
+
+We use Poetry for dependency management & packaging.  Please see [here for setup instructions](https://python-poetry.org/docs/#installation).
+
+Once you have Poetry installed, you can run the following to install the dependencies in a virtual environment:
+
+```bash
+poetry install
+```
+
+## Testing
+
+To run our tests will need to ensure a local redis server is installed.
+
+We use pytest to run unittests which you can run in a poetry shell with
+
+```bash
+poetry run pytest
+```
+
+## Releasing new versions
+
+- Bump version in `pyproject.toml`
+- Update the CHANGELOG
+- Commit the changes with a commit message "Version X.X.X"
+- Tag the current commit with `vX.X.X`
+- Create a new release on GitHub named `vX.X.X`
+- GitHub Actions will publish the new version to PIP for you
+
+## Legal
+
 Copyright: 2012 by Doist Ltd.
 
 License: BSD
