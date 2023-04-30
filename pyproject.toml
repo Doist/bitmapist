@@ -8,7 +8,6 @@ authors = [
 ]
 license="BSD"
 readme = "README.md"
-homepage="http://www.amix.dk/"
 repository = "https://github.com/Doist/bitmapist"
 keywords=[ "redis", "bitmap", "analytics", "bitmaps", "realtime", "cohort", ]
 classifiers=[
