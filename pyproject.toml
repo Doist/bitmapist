@@ -3,7 +3,7 @@ name = "bitmapist"
 version = "3.108"
 description="Implements a powerful analytics library using Redis bitmaps."
 authors = [
-    "Amir Salihefendic <amix@amix.dk>",
+    "Amir Salihefendic <dev@doist.com>",
     "Doist Developers <dev@doist.com>",
 ]
 license="BSD"
