@@ -40,7 +40,7 @@ Mako= "^1.0.4"
 
 [tool.poetry.dev-dependencies]
 pytest-runner = "^6.0.0"
-pytest = "^7.1.2"
+pytest = "^7.3.1"
 pre-commit = "^2.20.0"
 tox = "^3.25.1"
 
