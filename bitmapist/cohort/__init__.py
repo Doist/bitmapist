@@ -62,22 +62,22 @@ Get the data and render it via HTML::
 :developer: Amir Salihefendic ( http://amix.dk )
 :license: BSD
 """
+from datetime import date, datetime, timedelta
 from os import path
+from typing import Any, Callable, Optional
 
-from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-
 from mako.lookup import TemplateLookup
 
 from bitmapist import (
-    WeekEvents,
-    DayEvents,
-    MonthEvents,
-    YearEvents,
     BitOpAnd,
+    DayEvents,
+    GenericPeriodEvents,
+    MonthEvents,
+    WeekEvents,
+    YearEvents,
     delete_runtime_bitop_keys,
 )
-
 
 # --- HTML rendering
 
@@ -149,8 +149,8 @@ def render_html_data(
     dates_data,
     as_precent=True,
     time_group="days",
-    num_results=31,
-    num_of_rows=12,
+    num_results: int = 31,
+    num_of_rows: int = 12,
     start_date=None,
 ):
     """
@@ -178,8 +178,8 @@ def render_csv_data(
     dates_data,
     as_precent=True,
     time_group="days",
-    num_results=31,
-    num_of_rows=12,
+    num_results: int = 31,
+    num_of_rows: int = 12,
     start_date=None,
 ):
     """
@@ -322,10 +322,10 @@ def get_dates_data(
 
 # --- Custom handlers
 
-CUSTOM_HANDLERS = {}
+CUSTOM_HANDLERS: dict[str, Callable[..., Any]] = {}
 
 
-def set_custom_handler(event_name, callback):
+def set_custom_handler(event_name: str, callback) -> None:
     """
     Set a custom handler for `event_name`.
     This makes it possible to construct event names that are complex
@@ -359,41 +359,41 @@ def set_custom_handler(event_name, callback):
 # --- Private
 
 
-def _dispatch(key, cls, cls_args):
+def _dispatch(key: str, cls: type[GenericPeriodEvents], cls_args):
     if key in CUSTOM_HANDLERS:
         return CUSTOM_HANDLERS[key](key, cls, cls_args)
     else:
         return cls(key, *cls_args)
 
 
-def _day_events_fn(key, date, system):
+def _day_events_fn(key: str, date: date, system: str):
     cls = DayEvents
     cls_args = (date.year, date.month, date.day, system)
     return _dispatch(key, cls, cls_args)
 
 
-def _weeks_events_fn(key, date, system):
+def _weeks_events_fn(key: str, date: date, system: str):
     cls = WeekEvents
     cls_args = (date.year, date.isocalendar()[1], system)
     return _dispatch(key, cls, cls_args)
 
 
-def _month_events_fn(key, date, system):
+def _month_events_fn(key: str, date: date, system: str):
     cls = MonthEvents
     cls_args = (date.year, date.month, system)
     return _dispatch(key, cls, cls_args)
 
 
-def _year_events_fn(key, date, system):
+def _year_events_fn(key: str, date: date, system: str):
     cls = YearEvents
     cls_args = (date.year, system)
     return _dispatch(key, cls, cls_args)
 
 
-_LOOKUP = None
+_LOOKUP: Optional[TemplateLookup] = None
 
 
-def get_lookup():
+def get_lookup() -> TemplateLookup:
     global _LOOKUP
 
     if not _LOOKUP:
