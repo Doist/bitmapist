@@ -20,6 +20,7 @@ classifiers=[
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 packages=[ { include = "bitmapist" } ]
@@ -32,17 +33,17 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.13"
 redis = ">=2.10,<5.0"
 python-dateutil = "*"
 future = ">=0.14.3,<0.19.0"
 Mako= "^1.0.4"
 
 [tool.poetry.dev-dependencies]
-pytest-runner = "^6.0.0"
-pytest = "^7.3.1"
-pre-commit = "^2.20.0"
-tox = "^3.25.1"
+pytest-runner = "*"
+pytest = "*"
+pre-commit = "*"
+tox = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
