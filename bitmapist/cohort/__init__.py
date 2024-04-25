@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 bitmapist.cohort
 ~~~~~~~~~~~~~~~~
@@ -62,6 +61,7 @@ Get the data and render it via HTML::
 :developer: Amir Salihefendic ( http://amix.dk )
 :license: BSD
 """
+
 from datetime import date, datetime, timedelta
 from os import path
 from typing import Any, Callable, Optional
@@ -182,9 +182,7 @@ def render_csv_data(
     num_of_rows: int = 12,
     start_date=None,
 ):
-    """
-    Render's data as CSV.
-    """
+    """Render's data as CSV."""
     return (
         get_lookup()
         .get_template("table_data_csv.mako")
@@ -241,14 +239,18 @@ def get_dates_data(
 
         date_range = num_results
         now = now - timedelta(days=num_results - 1)
-        timedelta_inc = lambda d: timedelta(days=d)
+
+        def timedelta_inc(d):
+            return timedelta(days=d)
     # Weeks
     elif time_group == "weeks":
         fn_get_events = _weeks_events_fn
 
         date_range = num_results
         now = now - relativedelta(weeks=num_results - 1)
-        timedelta_inc = lambda w: relativedelta(weeks=w)
+
+        def timedelta_inc(w):
+            return relativedelta(weeks=w)
     # Months
     elif time_group == "months":
         fn_get_events = _month_events_fn
@@ -256,7 +258,9 @@ def get_dates_data(
         date_range = num_results
         now = now - relativedelta(months=num_results - 1)
         now -= timedelta(days=now.day - 1)
-        timedelta_inc = lambda m: relativedelta(months=m)
+
+        def timedelta_inc(m):
+            return relativedelta(months=m)
     # Years
     elif time_group == "years":
         fn_get_events = _year_events_fn
@@ -265,11 +269,13 @@ def get_dates_data(
 
         date_range = num_results
         now = now - relativedelta(years=num_results - 1)
-        timedelta_inc = lambda m: relativedelta(years=m)
+
+        def timedelta_inc(m):
+            return relativedelta(years=m)
 
     dates = []
 
-    for i in range(0, date_range):
+    for _i in range(date_range):
         result = [now]
 
         # events for select1 (+select1b)
@@ -282,7 +288,7 @@ def get_dates_data(
         result.append(select1_count)
 
         # Move in time
-        for t_delta in range(0, num_of_rows + 1):
+        for t_delta in range(num_of_rows + 1):
             if select1_count == 0:
                 result.append("")
                 continue
@@ -304,12 +310,11 @@ def get_dates_data(
 
             # Append to result
             if both_count == 0:
-                result.append(float(0.0))
+                result.append(0.0)
+            elif as_precent:
+                result.append((float(both_count) / float(select1_count)) * 100)
             else:
-                if as_precent:
-                    result.append((float(both_count) / float(select1_count)) * 100)
-                else:
-                    result.append(both_count)
+                result.append(both_count)
 
         dates.append(result)
         now = now + timedelta_inc(1)
@@ -339,9 +344,12 @@ def set_custom_handler(event_name: str, callback) -> None:
     using web or ios, could look like::
 
         def active_web_ios(key, cls, cls_args):
-            return cls('active', *cls_args) & (cls('web', *cls_args) | cls('ios', *cls_args))
+            return cls("active", *cls_args) & (
+                cls("web", *cls_args) | cls("ios", *cls_args)
+            )
 
-        set_custom_handler('active_web_ios', active_web_ios)
+
+        set_custom_handler("active_web_ios", active_web_ios)
 
     And then use something like::
 
@@ -362,8 +370,7 @@ def set_custom_handler(event_name: str, callback) -> None:
 def _dispatch(key: str, cls: type[GenericPeriodEvents], cls_args):
     if key in CUSTOM_HANDLERS:
         return CUSTOM_HANDLERS[key](key, cls, cls_args)
-    else:
-        return cls(key, *cls_args)
+    return cls(key, *cls_args)
 
 
 def _day_events_fn(key: str, date: date, system: str):

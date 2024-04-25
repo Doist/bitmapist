@@ -1,19 +1,17 @@
-from builtins import range
+import atexit
+import os
+import socket
+import subprocess
+import time
 
 import pytest
-import os
-import subprocess
-import atexit
-import socket
-import time
-from bitmapist import setup_redis, delete_all_events
+
+from bitmapist import delete_all_events, setup_redis
 
 
 @pytest.yield_fixture(scope="session", autouse=True)
 def redis_server():
-    """
-    Fixture starting the Redis server
-    """
+    """Fixture starting the Redis server"""
     redis_host = "127.0.0.1"
     redis_port = 6399
     if is_socket_open(redis_host, redis_port):
@@ -38,10 +36,8 @@ def clean_redis():
 
 
 def start_redis_server(port):
-    """
-    Helper function starting Redis server
-    """
-    devzero = open(os.devnull, "r")
+    """Helper function starting Redis server"""
+    devzero = open(os.devnull)
     devnull = open(os.devnull, "w")
     proc = subprocess.Popen(
         ["/usr/bin/redis-server", "--port", str(port)],
@@ -55,18 +51,14 @@ def start_redis_server(port):
 
 
 def is_socket_open(host, port):
-    """
-    Helper function which tests is the socket open
-    """
+    """Helper function which tests is the socket open"""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(0.1)
     return sock.connect_ex((host, port)) == 0
 
 
 def wait_for_socket(host, port, seconds=3):
-    """
-    Check if socket is up for :param:`seconds` sec, raise an error otherwise
-    """
+    """Check if socket is up for :param:`seconds` sec, raise an error otherwise"""
     polling_interval = 0.1
     iterations = int(seconds / polling_interval)
 

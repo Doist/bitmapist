@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
 from bitmapist import (
-    mark_event,
-    unmark_event,
-    YearEvents,
-    MonthEvents,
-    WeekEvents,
-    DayEvents,
-    HourEvents,
     BitOpAnd,
     BitOpOr,
+    DayEvents,
+    HourEvents,
+    MonthEvents,
+    WeekEvents,
+    YearEvents,
     get_event_names,
+    mark_event,
+    unmark_event,
 )
 
 
@@ -202,9 +201,9 @@ def test_bitop_key_sharing():
     ev2_both = BitOpAnd(ev2_task1, ev2_task2)
 
     assert ev1_both.redis_key == ev2_both.redis_key
-    assert len(ev1_both) == len(ev1_both) == 2
+    assert len(ev1_both) == len(ev2_both) == 2
     ev1_both.delete()
-    assert len(ev1_both) == len(ev1_both) == 0
+    assert len(ev1_both) == len(ev2_both) == 0
 
 
 def test_events_marked():
