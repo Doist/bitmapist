@@ -44,7 +44,207 @@ pytest-runner = "*"
 pytest = "*"
 pre-commit = "*"
 tox = "*"
+mypy = "*"
+ruff = "^0.4.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+# By default, always show source code snippets.
+output-format = 'full'
+
+extend-exclude = [
+  "env",
+  "runtime",
+]
+
+[tool.ruff.lint]
+select = [
+  "ASYNC",      # flake8-async
+  "B",          # flake8-bugbear
+  "C4",         # flake8-comprehensions
+  "D",          # pydocstyle,
+  "E", "W",     # pycodestyle
+  "F",          # pyflakes
+  "I",          # isort
+  "PL",         # pylint
+  "RUF",        # ruff
+  "S",          # flake8-bandit
+  "T20",        # flake8-print
+  "SIM",        # flake8-simplify
+  "UP",         # pyupgrade
+  "TCH",        # flake8-type-checking
+  "TRY",        # tryceratops
+  "BLE",        # flake8-blind-except
+  "LOG",        # flake8-logging
+  "G",          # flake8-logging-format
+  "RET",        # flake8-logging-return
+  "ISC",        # flake8-implicit-str-concat
+  "INP",        # flake8-no-pep420
+  "PIE",        # flake8-pie
+  "PT",         # flake8-pytest-style
+  "PERF",       # perflint
+]
+
+ignore = [
+  ## D - pydocstyle ##
+  # D1XX errors are OK. Don't force people into over-documenting.
+  "D100", "D101", "D102", "D103", "D104", "D105", "D107",
+  # These need to be fixed.
+  "D205",
+  "D400",
+  "D401",
+
+  ## E / W - pycodestyle ##
+  "E501",  # line too long
+
+  ## PL - pylint ##
+  # Commented-out rules are rules that we disable in pylint but are not supported by ruff yet.
+
+  "PLR6301",  # no-self-use
+  "PLC2701",  # import-private-name
+
+  # Import order issues
+  # "PLC0411",  # wrong-import-order
+  # "PLC0412",  # wrong-import-position
+  "PLC0414",  # ungrouped-imports
+  "PLC0415",  # import-outside-top-level
+
+  # flake8-implicit-str-concat
+  "ISC001",  # May conflict with the formatter
+
+  # Documentation issues
+  # "C0114",  # missing-module-docstring
+
+  # Complexity issues
+  "PLR0904",  # too-many-public-methods
+  # "PLC0302",  # too-many-lines
+  "PLR1702",  # too-many-nested-blocks
+  # "PLR0902",  # too-many-instance-attributes
+  "PLR0911",  # too-many-return-statements
+  "PLR0915",  # too-many-statements
+  "PLR0912",  # too-many-branches
+  # "PLR0903",  # too-few-public-methods
+  "PLR0914",  # too-many-locals
+  # "PLC0301",  # line-too-long
+  "PLR0913",  # too-many-arguments
+  "PLR0917",  # too-many-positional
+  "PLR2004",  # magic-value-comparison
+  "PLW0603",  # global-statement
+  "PLW2901",  # redefined-loop-name
+
+  ## RUF - ruff ##
+  "RUF001",  # ambiguous-unicode-character-string
+  "RUF002",  # ambiguous-unicode-character-docstring
+  "RUF003",  # ambiguous-unicode-character-comment
+  "RUF012",  # mutable-class-default
+
+  # Enable when Poetry supports PEP 621 and we migrate our confguration to it.
+  # See: https://github.com/python-poetry/poetry-core/pull/567
+  "RUF200",
+
+  "S101",  # assert
+  "S104",  # hardcoded-bind-all-interfaces
+  "S105",  # hardcoded-password-string
+  "S106",  # hardcoded-password-func-arg
+  "S303",  # suspicious-insecure-hash-usage
+  "S310",  # suspicious-url-open-usage
+  "S311",  # suspicious-non-cryptographic-random-usage
+  "S324",  # hashlib-insecure-hash-function
+  "S603",  # subprocess-without-shell-equals-true
+  "S607",  # start-process-with-partial-path
+  "S608",  # hardcoded-sql-expression
+
+  ## SIM - flake8-simplify ##
+  "SIM102",  # collapsible-if
+  "SIM114",  # if-with-same-arms
+  "SIM117",  # multiple-with-statements
+
+  # Enable when the rule is out of preview and false-positives are handled.
+  # See: https://docs.astral.sh/ruff/rules/in-dict-keys/
+  "SIM118",  # in-dict-keys
+
+  ## TRY - tryceratops ##
+  "TRY003",   # raise-vanilla-args
+  "TRY004",   # type-check-without-type-error
+  "TRY301",   # raise-within-try
+
+  ## BLE - flake8-blind-except ##
+  "BLE001",   # blind-except
+
+  ## RET - flake8-return ##
+  "RET504",   # unnecessary-assign
+
+  ## PT - flake8-pytest-style ##
+  "PT004",  # pytest-missing-fixture-name-underscore
+  "PT012",  # pytest-raises-with-multiple-statements
+
+  ## UP - pyupgrade ##
+  "UP038",  # non-pep604-isinstance
+
+  ## B - flake8-bugbear ##
+  "B008",   # function-call-in-default-argument
+  "B009",   # get-attr-with-constant
+  "B010",   # set-attr-with-constant
+  "B018",   # useless-expression
+]
+
+flake8-pytest-style.fixture-parentheses = false
+flake8-pytest-style.mark-parentheses = false
+
+pylint.allow-dunder-method-names = [
+  "__json__",
+  "__get_pydantic_core_schema__"
+]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+  "pydantic.BaseModel",
+  "typing_extensions.TypedDict",
+  "sqlalchemy.orm.DeclarativeBase",
+]
+runtime-evaluated-decorators = [
+  "pydantic.dataclasses.dataclass",
+  "pydantic.validate_call",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/scripts/**" = ["S101", "T20"] # Allow assert and print statement in scripts.
+".git-hooks/**" = ["T20"] # Allow print statement in scripts.
+"tests/**" = [
+  "S101",   # assert
+  "S104",   # hardcoded-bind-all-interfaces
+  "S105",   # hardcoded-password-string
+  "S106",   # hardcoded-password-func-arg
+  "S107",   # hardcoded-password-default
+  "S301",   # suspicious-pickle-usage
+  "RUF018", # assignment-in-assert
+]
+
+# To import all fixtures from other conftests.
+"conftest.py" = ["F401", "F403"]
+# To import select fixtures from non-local conftests.
+# Importing and using the fixture makes it be shadowed.
+"test_*.py" = ["F401", "F811"]
+
+[tool.ruff.lint.isort]
+section-order = [
+  "future",
+  "standard-library",
+  "third-party",
+  "first-party",
+  "local-folder",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.pyupgrade]
+# Required by tools like Pydantic that use type information at runtime.
+# https://github.com/asottile/pyupgrade/issues/622#issuecomment-1088766572
+keep-runtime-typing = true
+
+[tool.ruff.format]
+docstring-code-format = true
