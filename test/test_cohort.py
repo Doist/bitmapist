@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 from bitmapist import mark_event
 from bitmapist.cohort import get_dates_data

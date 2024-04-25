@@ -1,17 +1,16 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
 from bitmapist import (
-    mark_event,
-    unmark_event,
-    YearEvents,
-    MonthEvents,
-    WeekEvents,
-    DayEvents,
-    HourEvents,
     BitOpAnd,
     BitOpOr,
+    DayEvents,
+    HourEvents,
+    MonthEvents,
+    WeekEvents,
+    YearEvents,
     get_event_names,
+    mark_event,
+    unmark_event,
 )
 
 

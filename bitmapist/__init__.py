@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 bitmapist
 ~~~~~~~~~
@@ -455,11 +454,11 @@ class GenericPeriodEvents(
     MixinIter, MixinCounts, MixinContains, MixinEventsMisc, MixinBitOperations
 ):
     def next(self):
-        """next object in a datetime line"""
+        """Next object in a datetime line"""
         return self.delta(value=1)
 
     def prev(self):
-        """prev object in a datetime line"""
+        """Prev object in a datetime line"""
         return self.delta(value=-1)
 
 
@@ -761,14 +760,14 @@ def not_none(*keys):
 
 
 def iso_year_start(iso_year: int) -> date:
-    "The gregorian calendar date of the first day of the given ISO year"
+    """The gregorian calendar date of the first day of the given ISO year"""
     fourth_jan = date(iso_year, 1, 4)
     delta = timedelta(fourth_jan.isoweekday() - 1)
     return fourth_jan - delta
 
 
 def iso_to_gregorian(iso_year: int, iso_week: int, iso_day: int) -> date:
-    "Gregorian calendar date for the given ISO year, week and day"
+    """Gregorian calendar date for the given ISO year, week and day"""
     year_start = iso_year_start(iso_year)
     return year_start + timedelta(days=iso_day - 1, weeks=iso_week - 1)
 

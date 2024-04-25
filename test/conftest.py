@@ -1,12 +1,13 @@
+import atexit
+import os
+import socket
+import subprocess
+import time
 from builtins import range
 
 import pytest
-import os
-import subprocess
-import atexit
-import socket
-import time
-from bitmapist import setup_redis, delete_all_events
+
+from bitmapist import delete_all_events, setup_redis
 
 
 @pytest.yield_fixture(scope="session", autouse=True)
@@ -41,7 +42,7 @@ def start_redis_server(port):
     """
     Helper function starting Redis server
     """
-    devzero = open(os.devnull, "r")
+    devzero = open(os.devnull)
     devnull = open(os.devnull, "w")
     proc = subprocess.Popen(
         ["/usr/bin/redis-server", "--port", str(port)],

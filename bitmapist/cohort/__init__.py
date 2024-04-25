@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 bitmapist.cohort
 ~~~~~~~~~~~~~~~~
@@ -269,7 +268,7 @@ def get_dates_data(
 
     dates = []
 
-    for i in range(0, date_range):
+    for i in range(date_range):
         result = [now]
 
         # events for select1 (+select1b)
@@ -282,7 +281,7 @@ def get_dates_data(
         result.append(select1_count)
 
         # Move in time
-        for t_delta in range(0, num_of_rows + 1):
+        for t_delta in range(num_of_rows + 1):
             if select1_count == 0:
                 result.append("")
                 continue
@@ -304,12 +303,11 @@ def get_dates_data(
 
             # Append to result
             if both_count == 0:
-                result.append(float(0.0))
+                result.append(0.0)
+            elif as_precent:
+                result.append((float(both_count) / float(select1_count)) * 100)
             else:
-                if as_precent:
-                    result.append((float(both_count) / float(select1_count)) * 100)
-                else:
-                    result.append(both_count)
+                result.append(both_count)
 
         dates.append(result)
         now = now + timedelta_inc(1)

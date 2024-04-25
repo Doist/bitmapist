@@ -1,5 +1,6 @@
-import bitmapist
 import datetime
+
+import bitmapist
 
 
 def test_from_date_year():
