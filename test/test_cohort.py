@@ -29,7 +29,7 @@ def events():
 
 
 @pytest.mark.parametrize(
-    "select1,select1b,select2,select2b, expected",
+    ("select1", "select1b", "select2", "select2b", "expected"),
     [
         ("active", None, "active", None, [2, 100, 50]),
         ("active", None, "unknown", None, [2, "", ""]),
