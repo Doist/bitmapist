@@ -37,8 +37,8 @@ def clean_redis():
 
 def start_redis_server(port):
     """Helper function starting Redis server"""
-    devzero = open(os.devnull)  # noqa: SIM115
-    devnull = open(os.devnull, "w")  # noqa: SIM115
+    devzero = open(os.devnull)
+    devnull = open(os.devnull, "w")
     proc = subprocess.Popen(
         ["/usr/bin/redis-server", "--port", str(port)],
         stdin=devzero,
