@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bitmapist"
-version = "3.112"
+version = "3.113"
 description="Implements a powerful analytics library using Redis bitmaps."
 authors = [
     "Amir Salihefendic <dev@doist.com>",
