@@ -47,7 +47,7 @@ def test_cohort(select1, select1b, select2, select2b, expected, events):
         select2=select2,
         select2b=select2b,
         time_group="days",
-        as_precent=1,
+        as_percent=1,
         num_results=1,
         num_of_rows=1,
     )

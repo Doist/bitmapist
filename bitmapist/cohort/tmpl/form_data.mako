@@ -36,10 +36,10 @@
         </dd>
 
         <dd>
-            As precent:
-            <select name="as_precent">
-                <option value="1" ${ 'selected="selected"' if as_precent else '' }>Yes</option>
-                <option value="0" ${ 'selected="selected"' if not as_precent else '' }>No</option>
+            As percent:
+            <select name="as_percent">
+                <option value="1" ${ 'selected="selected"' if as_percent else '' }>Yes</option>
+                <option value="0" ${ 'selected="selected"' if not as_percent else '' }>No</option>
             </select>
         </dd>
 

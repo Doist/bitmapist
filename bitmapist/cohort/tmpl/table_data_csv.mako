@@ -18,7 +18,7 @@ for i in range(2, 15):
     if prct == '':
         day_results.append('')
     else:
-        if as_precent:
+        if as_percent:
             day_results.append(str(round(prct, 2)))
         else:
             day_results.append(str(int(prct)))
