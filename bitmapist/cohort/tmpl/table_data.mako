@@ -70,7 +70,7 @@
 
                 ## '' denotes no entry
                 %if data_entry != '':
-                    %if as_precent:
+                    %if as_percent:
                         <%
                         color = 'hsla(200, 100%%, 0%%, %s);' % (round(float(data_entry/100)+0.5, 1))
                         %>
@@ -110,7 +110,7 @@
             %>
 
             <td class="avg_row">
-                %if as_precent:
+                %if as_percent:
                     ${ round(average, 2) }%
                 %else:
                     ${ int(average) }

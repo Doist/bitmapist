@@ -93,7 +93,7 @@ def render_html_form(
     select1b=None,
     select2=None,
     select2b=None,
-    as_precent=1,
+    as_percent=1,
     num_results=31,
     num_of_rows=12,
     start_date=None,
@@ -137,7 +137,7 @@ def render_html_form(
             select2=select2,
             select2b=select2b,
             action_url=action_url,
-            as_precent=as_precent,
+            as_percent=as_percent,
             num_results=int(num_results),
             num_of_rows=int(num_of_rows),
             start_date=start_date,
@@ -147,7 +147,7 @@ def render_html_form(
 
 def render_html_data(
     dates_data,
-    as_precent=True,
+    as_percent=True,
     time_group="days",
     num_results: int = 31,
     num_of_rows: int = 12,
@@ -157,7 +157,7 @@ def render_html_data(
     Render's data as HTML, inside a TABLE element.
 
     :param :dates_data The data that's returned by `get_dates_data`
-    :param :as_precent Should the data be shown as percents or as counts. Defaults to `True`
+    :param :as_percent Should the data be shown as percents or as counts. Defaults to `True`
     :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     """
     return (
@@ -165,7 +165,7 @@ def render_html_data(
         .get_template("table_data.mako")
         .render(
             dates_data=dates_data,
-            as_precent=as_precent,
+            as_percent=as_percent,
             time_group=time_group,
             num_results=num_results,
             num_of_rows=num_of_rows,
@@ -176,7 +176,7 @@ def render_html_data(
 
 def render_csv_data(
     dates_data,
-    as_precent=True,
+    as_percent=True,
     time_group="days",
     num_results: int = 31,
     num_of_rows: int = 12,
@@ -188,7 +188,7 @@ def render_csv_data(
         .get_template("table_data_csv.mako")
         .render(
             dates_data=dates_data,
-            as_precent=as_precent,
+            as_percent=as_percent,
             time_group=time_group,
             num_results=num_results,
             num_of_rows=num_of_rows,
@@ -207,7 +207,7 @@ def get_dates_data(
     select2b=None,
     time_group="days",
     system="default",
-    as_precent=1,
+    as_percent=1,
     num_results=31,
     num_of_rows=12,
     start_date=None,
@@ -221,7 +221,7 @@ def get_dates_data(
     :param :select2b Second filter (could be `playlist:created`, optional)
     :param :time_group What is the data grouped by? Can be `days`, `weeks`, `months`, `years`
     :param :system What bitmapist should be used?
-    :param :as_precent If `True` then percents as calculated and shown. Defaults to `True`
+    :param :as_percent If `True` then percents as calculated and shown. Defaults to `True`
     :return A list of day data, formatted like `[[datetime, count], ...]`
     """
     num_results = int(num_results)
@@ -242,6 +242,7 @@ def get_dates_data(
 
         def timedelta_inc(d):
             return timedelta(days=d)
+
     # Weeks
     elif time_group == "weeks":
         fn_get_events = _weeks_events_fn
@@ -251,6 +252,7 @@ def get_dates_data(
 
         def timedelta_inc(w):
             return relativedelta(weeks=w)
+
     # Months
     elif time_group == "months":
         fn_get_events = _month_events_fn
@@ -261,6 +263,7 @@ def get_dates_data(
 
         def timedelta_inc(m):
             return relativedelta(months=m)
+
     # Years
     elif time_group == "years":
         fn_get_events = _year_events_fn
@@ -311,7 +314,7 @@ def get_dates_data(
             # Append to result
             if both_count == 0:
                 result.append(0.0)
-            elif as_precent:
+            elif as_percent:
                 result.append((float(both_count) / float(select1_count)) * 100)
             else:
                 result.append(both_count)
