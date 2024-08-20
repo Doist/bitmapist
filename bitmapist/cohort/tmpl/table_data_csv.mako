@@ -1,4 +1,4 @@
-Date,Total,${ ",".join(str(i) for i in range(0, 13)) }
+Date,Total,${ ",".join(str(i) for i in range(0, num_of_rows+1)) }
 %for row_data in dates_data:
 <%
 if time_group == 'months':
@@ -13,7 +13,7 @@ else:
 total_count = row_data[1]
 
 day_results = []
-for i in range(2, 15):
+for i in range(2, num_of_rows+3):
     prct = row_data[i]
     if prct == '':
         day_results.append('')
