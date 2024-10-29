@@ -198,13 +198,13 @@ def unmark_event(
 
 def _mark(
     event_name,
-    uuid,
+    uuid: int,
     system="default",
     now=None,
     track_hourly=None,
     track_unique=None,
-    use_pipeline=True,
-    value=1,
+    use_pipeline: bool = True,
+    value: int = 1,
 ):
     if track_hourly is None:
         track_hourly = TRACK_HOURLY
@@ -214,7 +214,17 @@ def _mark(
     if not now:
         now = datetime.utcnow()
 
-    obj_classes = [MonthEvents, WeekEvents, DayEvents]
+    obj_classes: list[
+        type[MonthEvents]
+        | type[WeekEvents]
+        | type[DayEvents]
+        | type[HourEvents]
+        | type[UniqueEvents]
+    ] = [
+        MonthEvents,
+        WeekEvents,
+        DayEvents,
+    ]
     if track_hourly:
         obj_classes.append(HourEvents)
     if track_unique:
@@ -228,7 +238,7 @@ def _mark(
         client.setbit(obj_class.from_date(event_name, now).redis_key, uuid, value)
 
     if use_pipeline:
-        client.execute()
+        client.execute()  # type: ignore[attr-defined] # type dependent on conditional
 
 
 def mark_unique(event_name: str, uuid: int, system: str = "default") -> None:
@@ -271,7 +281,7 @@ def unmark_unique(event_name: str, uuid: int, system: str = "default") -> None:
     _mark_unique(event_name, uuid, system, value=0)
 
 
-def _mark_unique(event_name, uuid, system="default", value=1):
+def _mark_unique(event_name, uuid: int, system="default", value: int = 1):
     get_redis(system).setbit(UniqueEvents(event_name).redis_key, uuid, value)
 
 

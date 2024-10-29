@@ -64,7 +64,7 @@ Get the data and render it via HTML::
 
 from datetime import date, datetime, timedelta
 from os import path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Literal, Optional
 
 from dateutil.relativedelta import relativedelta
 from mako.lookup import TemplateLookup
@@ -88,15 +88,15 @@ def render_html_form(
     selections1b=None,
     selections2=None,
     selections2b=None,
-    time_group="days",
+    time_group: Literal["days", "weeks", "months", "years"] = "days",
     select1=None,
     select1b=None,
     select2=None,
     select2b=None,
-    as_percent=1,
-    num_results=31,
-    num_of_rows=12,
-    start_date=None,
+    as_percent: bool = True,
+    num_results: int = 31,
+    num_of_rows: int = 12,
+    start_date: str | None = None,
 ):
     """
     Render a HTML form that can be used to query the data in bitmapist.
@@ -147,11 +147,11 @@ def render_html_form(
 
 def render_html_data(
     dates_data,
-    as_percent=True,
-    time_group="days",
+    as_percent: bool = True,
+    time_group: Literal["days", "weeks", "months", "years"] = "days",
     num_results: int = 31,
     num_of_rows: int = 12,
-    start_date=None,
+    start_date: str | None = None,
 ):
     """
     Render's data as HTML, inside a TABLE element.
@@ -176,11 +176,11 @@ def render_html_data(
 
 def render_csv_data(
     dates_data,
-    as_percent=True,
-    time_group="days",
+    as_percent: bool = True,
+    time_group: Literal["days", "weeks", "months", "years"] = "days",
     num_results: int = 31,
     num_of_rows: int = 12,
-    start_date=None,
+    start_date: str | None = None,
 ):
     """Render's data as CSV."""
     return (
@@ -205,12 +205,12 @@ def get_dates_data(
     select2,
     select1b=None,
     select2b=None,
-    time_group="days",
+    time_group: Literal["days", "weeks", "months", "years"] = "days",
     system="default",
-    as_percent=1,
-    num_results=31,
-    num_of_rows=12,
-    start_date=None,
+    as_percent: bool = True,
+    num_results: int = 31,
+    num_of_rows: int = 12,
+    start_date: str | None = None,
 ):
     """
     Fetch the data from bitmapist.
@@ -240,8 +240,8 @@ def get_dates_data(
         date_range = num_results
         now = now - timedelta(days=num_results - 1)
 
-        def timedelta_inc(d):
-            return timedelta(days=d)
+        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+            return timedelta(days=delta)
 
     # Weeks
     elif time_group == "weeks":
@@ -250,8 +250,8 @@ def get_dates_data(
         date_range = num_results
         now = now - relativedelta(weeks=num_results - 1)
 
-        def timedelta_inc(w):
-            return relativedelta(weeks=w)
+        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+            return relativedelta(weeks=delta)
 
     # Months
     elif time_group == "months":
@@ -261,8 +261,8 @@ def get_dates_data(
         now = now - relativedelta(months=num_results - 1)
         now -= timedelta(days=now.day - 1)
 
-        def timedelta_inc(m):
-            return relativedelta(months=m)
+        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+            return relativedelta(months=delta)
 
     # Years
     elif time_group == "years":
@@ -273,13 +273,13 @@ def get_dates_data(
         date_range = num_results
         now = now - relativedelta(years=num_results - 1)
 
-        def timedelta_inc(m):
-            return relativedelta(years=m)
+        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+            return relativedelta(years=delta)
 
     dates = []
 
     for _i in range(date_range):
-        result = [now]
+        result: list[Any] = [now]
 
         # events for select1 (+select1b)
         select1_events = fn_get_events(select1, now, system)
