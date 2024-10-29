@@ -96,7 +96,7 @@ def render_html_form(
     as_percent: bool = True,
     num_results: int = 31,
     num_of_rows: int = 12,
-    start_date: str | None = None,
+    start_date: Optional[str] = None,
 ):
     """
     Render a HTML form that can be used to query the data in bitmapist.
@@ -151,7 +151,7 @@ def render_html_data(
     time_group: Literal["days", "weeks", "months", "years"] = "days",
     num_results: int = 31,
     num_of_rows: int = 12,
-    start_date: str | None = None,
+    start_date: Optional[str] = None,
 ):
     """
     Render's data as HTML, inside a TABLE element.
@@ -180,7 +180,7 @@ def render_csv_data(
     time_group: Literal["days", "weeks", "months", "years"] = "days",
     num_results: int = 31,
     num_of_rows: int = 12,
-    start_date: str | None = None,
+    start_date: Optional[str] = None,
 ):
     """Render's data as CSV."""
     return (
@@ -210,7 +210,7 @@ def get_dates_data(
     as_percent: bool = True,
     num_results: int = 31,
     num_of_rows: int = 12,
-    start_date: str | None = None,
+    start_date: Optional[str] = None,
 ):
     """
     Fetch the data from bitmapist.
