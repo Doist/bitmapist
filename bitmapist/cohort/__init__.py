@@ -64,7 +64,7 @@ Get the data and render it via HTML::
 
 from datetime import date, datetime, timedelta
 from os import path
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Callable, Literal, Optional, Union
 
 from dateutil.relativedelta import relativedelta
 from mako.lookup import TemplateLookup
@@ -240,7 +240,7 @@ def get_dates_data(
         date_range = num_results
         now = now - timedelta(days=num_results - 1)
 
-        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+        def timedelta_inc(delta: int) -> Union[relativedelta, timedelta]:
             return timedelta(days=delta)
 
     # Weeks
@@ -250,7 +250,7 @@ def get_dates_data(
         date_range = num_results
         now = now - relativedelta(weeks=num_results - 1)
 
-        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+        def timedelta_inc(delta: int) -> Union[relativedelta, timedelta]:
             return relativedelta(weeks=delta)
 
     # Months
@@ -261,7 +261,7 @@ def get_dates_data(
         now = now - relativedelta(months=num_results - 1)
         now -= timedelta(days=now.day - 1)
 
-        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+        def timedelta_inc(delta: int) -> Union[relativedelta, timedelta]:
             return relativedelta(months=delta)
 
     # Years
@@ -273,7 +273,7 @@ def get_dates_data(
         date_range = num_results
         now = now - relativedelta(years=num_results - 1)
 
-        def timedelta_inc(delta: int) -> relativedelta | timedelta:
+        def timedelta_inc(delta: int) -> Union[relativedelta, timedelta]:
             return relativedelta(years=delta)
 
     dates = []
