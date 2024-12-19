@@ -34,7 +34,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
-redis = ">=2.10,<5.0"
+redis = ">=2.10,<6.0"
 python-dateutil = "*"
 future = ">=0.14.3,<0.19.0"
 Mako= "^1.0.4"
