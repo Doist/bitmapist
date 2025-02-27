@@ -473,7 +473,9 @@ class YearEvents(GenericPeriodEvents):
     """
 
     @classmethod
-    def from_date(cls, event_name, dt: Optional[date | datetime] = None, system="default"):
+    def from_date(
+        cls, event_name, dt: Optional[date | datetime] = None, system="default"
+    ):
         dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, system=system)
 
@@ -507,7 +509,9 @@ class MonthEvents(GenericPeriodEvents):
     """
 
     @classmethod
-    def from_date(cls, event_name, dt: Optional[date | datetime] = None, system="default"):
+    def from_date(
+        cls, event_name, dt: Optional[date | datetime] = None, system="default"
+    ):
         dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, dt.month, system=system)
 
@@ -528,7 +532,9 @@ class MonthEvents(GenericPeriodEvents):
 
     def period_end(self):
         _, day = calendar.monthrange(self.year, self.month)
-        return datetime(self.year, self.month, day, 23, 59, 59, 999999, tzinfo=timezone.utc)
+        return datetime(
+            self.year, self.month, day, 23, 59, 59, 999999, tzinfo=timezone.utc
+        )
 
 
 class WeekEvents(GenericPeriodEvents):
@@ -542,7 +548,10 @@ class WeekEvents(GenericPeriodEvents):
 
     @classmethod
     def from_date(
-        cls, event_name: str, dt: Optional[date | datetime] = None, system: str = "default"
+        cls,
+        event_name: str,
+        dt: Optional[date | datetime] = None,
+        system: str = "default",
     ):
         dt = dt or datetime.now(tz=timezone.utc)
         dt_year, dt_week, _ = dt.isocalendar()
@@ -581,7 +590,9 @@ class DayEvents(GenericPeriodEvents):
     """
 
     @classmethod
-    def from_date(cls, event_name: str, dt: Optional[date | datetime] = None, system="default"):
+    def from_date(
+        cls, event_name: str, dt: Optional[date | datetime] = None, system="default"
+    ):
         dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, dt.month, dt.day, system=system)
 
@@ -602,7 +613,9 @@ class DayEvents(GenericPeriodEvents):
         return datetime(self.year, self.month, self.day, tzinfo=timezone.utc)
 
     def period_end(self) -> datetime:
-        return datetime(self.year, self.month, self.day, 23, 59, 59, 999999, tzinfo=timezone.utc)
+        return datetime(
+            self.year, self.month, self.day, 23, 59, 59, 999999, tzinfo=timezone.utc
+        )
 
 
 class HourEvents(GenericPeriodEvents):
@@ -642,7 +655,9 @@ class HourEvents(GenericPeriodEvents):
         )
 
     def delta(self, value):
-        dt = datetime(self.year, self.month, self.day, self.hour, tzinfo=timezone.utc) + timedelta(hours=value)
+        dt = datetime(
+            self.year, self.month, self.day, self.hour, tzinfo=timezone.utc
+        ) + timedelta(hours=value)
         return self.__class__(
             self.event_name, dt.year, dt.month, dt.day, dt.hour, self.system
         )
@@ -651,7 +666,16 @@ class HourEvents(GenericPeriodEvents):
         return datetime(self.year, self.month, self.day, self.hour, tzinfo=timezone.utc)
 
     def period_end(self) -> datetime:
-        return datetime(self.year, self.month, self.day, self.hour, 59, 59, 999999, tzinfo=timezone.utc)
+        return datetime(
+            self.year,
+            self.month,
+            self.day,
+            self.hour,
+            59,
+            59,
+            999999,
+            tzinfo=timezone.utc,
+        )
 
 
 # --- Bit operations
