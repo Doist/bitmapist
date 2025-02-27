@@ -62,7 +62,7 @@ Get the data and render it via HTML::
 :license: BSD
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from os import path
 from typing import Any, Callable, Literal, Optional, Union
 
@@ -228,10 +228,10 @@ def get_dates_data(
     num_of_rows = int(num_of_rows)
 
     if start_date:
-        now = datetime.strptime(start_date, "%Y-%m-%d")
+        now = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         now = now + timedelta(days=num_results - 1)
     else:
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
 
     # Days
     if time_group == "days":

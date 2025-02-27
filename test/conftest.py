@@ -9,7 +9,7 @@ import pytest
 from bitmapist import delete_all_events, setup_redis
 
 
-@pytest.yield_fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def redis_server():
     """Fixture starting the Redis server"""
     redis_host = "127.0.0.1"

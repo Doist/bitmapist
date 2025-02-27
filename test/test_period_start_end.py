@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -16,6 +16,6 @@ import bitmapist
     ],
 )
 def test_period_start_end(cls):
-    dt = datetime.datetime(2014, 1, 1, 8, 30)
+    dt = datetime(2014, 1, 1, 8, 30, tzinfo=timezone.utc)
     ev = cls.from_date("foo", dt)
     assert ev.period_start() <= dt <= ev.period_end()

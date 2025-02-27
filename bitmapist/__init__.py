@@ -33,8 +33,8 @@ Setting things up::
     from datetime import datetime, timedelta
     from bitmapist import mark_event, MonthEvents
 
-    now = datetime.utcnow()
-    last_month = datetime.utcnow() - timedelta(days=30)
+    now = datetime.now(tz=timezone.utc)
+    last_month = now - timedelta(days=30)
 
 Mark user 123 as active::
 
@@ -84,7 +84,7 @@ from __future__ import annotations
 import calendar
 import threading
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import redis
@@ -159,7 +159,7 @@ def mark_event(
     :param :system The Redis system to use (string, Redis instance, or Pipeline
         instance).
     :param :now Which date should be used as a reference point, default is
-        `datetime.utcnow()`
+        `datetime.now(tz=timezone.utc)`
     :param :track_hourly Should hourly stats be tracked, defaults to
         bitmapist.TRACK_HOURLY
     :param :track_unique Should unique stats be tracked, defaults to
@@ -200,7 +200,7 @@ def _mark(
     event_name,
     uuid: int,
     system="default",
-    now=None,
+    now: Optional[datetime] = None,
     track_hourly=None,
     track_unique=None,
     use_pipeline: bool = True,
@@ -211,8 +211,7 @@ def _mark(
     if track_unique is None:
         track_unique = TRACK_UNIQUE
 
-    if not now:
-        now = datetime.utcnow()
+    now = now or datetime.now(tz=timezone.utc)
 
     obj_classes: list[
         type[MonthEvents]
@@ -474,12 +473,12 @@ class YearEvents(GenericPeriodEvents):
     """
 
     @classmethod
-    def from_date(cls, event_name, dt=None, system="default"):
-        dt = dt or datetime.utcnow()
+    def from_date(cls, event_name, dt: Optional[date | datetime] = None, system="default"):
+        dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, system=system)
 
     def __init__(self, event_name, year=None, system="default"):
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         self.event_name = event_name
         self.year = not_none(year, now.year)
         self.system = system
@@ -492,10 +491,10 @@ class YearEvents(GenericPeriodEvents):
         return self.__class__(self.event_name, self.year + value, self.system)
 
     def period_start(self):
-        return datetime(self.year, 1, 1)
+        return datetime(self.year, 1, 1, tzinfo=timezone.utc)
 
     def period_end(self):
-        return datetime(self.year, 12, 31, 23, 59, 59, 999999)
+        return datetime(self.year, 12, 31, 23, 59, 59, 999999, tzinfo=timezone.utc)
 
 
 class MonthEvents(GenericPeriodEvents):
@@ -508,12 +507,12 @@ class MonthEvents(GenericPeriodEvents):
     """
 
     @classmethod
-    def from_date(cls, event_name, dt=None, system="default"):
-        dt = dt or datetime.utcnow()
+    def from_date(cls, event_name, dt: Optional[date | datetime] = None, system="default"):
+        dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, dt.month, system=system)
 
     def __init__(self, event_name, year=None, month=None, system="default"):
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
@@ -525,11 +524,11 @@ class MonthEvents(GenericPeriodEvents):
         return self.__class__(self.event_name, year, month, self.system)
 
     def period_start(self):
-        return datetime(self.year, self.month, 1)
+        return datetime(self.year, self.month, 1, tzinfo=timezone.utc)
 
     def period_end(self):
         _, day = calendar.monthrange(self.year, self.month)
-        return datetime(self.year, self.month, day, 23, 59, 59, 999999)
+        return datetime(self.year, self.month, day, 23, 59, 59, 999999, tzinfo=timezone.utc)
 
 
 class WeekEvents(GenericPeriodEvents):
@@ -543,14 +542,14 @@ class WeekEvents(GenericPeriodEvents):
 
     @classmethod
     def from_date(
-        cls, event_name: str, dt: Optional[date] = None, system: str = "default"
+        cls, event_name: str, dt: Optional[date | datetime] = None, system: str = "default"
     ):
-        dt = dt or datetime.utcnow()
+        dt = dt or datetime.now(tz=timezone.utc)
         dt_year, dt_week, _ = dt.isocalendar()
         return cls(event_name, dt_year, dt_week, system=system)
 
     def __init__(self, event_name: str, year=None, week=None, system="default"):
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         now_year, now_week, _ = now.isocalendar()
         self.event_name = event_name
         self.year = not_none(year, now_year)
@@ -565,11 +564,11 @@ class WeekEvents(GenericPeriodEvents):
 
     def period_start(self):
         s = iso_to_gregorian(self.year, self.week, 1)  # mon
-        return datetime(s.year, s.month, s.day)
+        return datetime(s.year, s.month, s.day, tzinfo=timezone.utc)
 
     def period_end(self):
         e = iso_to_gregorian(self.year, self.week, 7)  # mon
-        return datetime(e.year, e.month, e.day, 23, 59, 59, 999999)
+        return datetime(e.year, e.month, e.day, 23, 59, 59, 999999, tzinfo=timezone.utc)
 
 
 class DayEvents(GenericPeriodEvents):
@@ -582,12 +581,12 @@ class DayEvents(GenericPeriodEvents):
     """
 
     @classmethod
-    def from_date(cls, event_name: str, dt: Optional[date] = None, system="default"):
-        dt = dt or datetime.utcnow()
+    def from_date(cls, event_name: str, dt: Optional[date | datetime] = None, system="default"):
+        dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, dt.month, dt.day, system=system)
 
     def __init__(self, event_name, year=None, month=None, day=None, system="default"):
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
@@ -600,10 +599,10 @@ class DayEvents(GenericPeriodEvents):
         return self.__class__(self.event_name, dt.year, dt.month, dt.day, self.system)
 
     def period_start(self) -> datetime:
-        return datetime(self.year, self.month, self.day)
+        return datetime(self.year, self.month, self.day, tzinfo=timezone.utc)
 
     def period_end(self) -> datetime:
-        return datetime(self.year, self.month, self.day, 23, 59, 59, 999999)
+        return datetime(self.year, self.month, self.day, 23, 59, 59, 999999, tzinfo=timezone.utc)
 
 
 class HourEvents(GenericPeriodEvents):
@@ -619,7 +618,7 @@ class HourEvents(GenericPeriodEvents):
     def from_date(
         cls, event_name: str, dt: Optional[datetime] = None, system="default"
     ):
-        dt = dt or datetime.utcnow()
+        dt = dt or datetime.now(tz=timezone.utc)
         return cls(event_name, dt.year, dt.month, dt.day, dt.hour, system=system)
 
     def __init__(
@@ -631,7 +630,7 @@ class HourEvents(GenericPeriodEvents):
         hour: Optional[int] = None,
         system: str = "default",
     ):
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc)
         self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
@@ -643,18 +642,16 @@ class HourEvents(GenericPeriodEvents):
         )
 
     def delta(self, value):
-        dt = datetime(self.year, self.month, self.day, self.hour) + timedelta(
-            hours=value
-        )
+        dt = datetime(self.year, self.month, self.day, self.hour, tzinfo=timezone.utc) + timedelta(hours=value)
         return self.__class__(
             self.event_name, dt.year, dt.month, dt.day, dt.hour, self.system
         )
 
     def period_start(self) -> datetime:
-        return datetime(self.year, self.month, self.day, self.hour)
+        return datetime(self.year, self.month, self.day, self.hour, tzinfo=timezone.utc)
 
     def period_end(self) -> datetime:
-        return datetime(self.year, self.month, self.day, self.hour, 59, 59, 999999)
+        return datetime(self.year, self.month, self.day, self.hour, 59, 59, 999999, tzinfo=timezone.utc)
 
 
 # --- Bit operations
