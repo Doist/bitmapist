@@ -210,8 +210,8 @@ def _mark(
         track_hourly = TRACK_HOURLY
     if track_unique is None:
         track_unique = TRACK_UNIQUE
-
-    now = now or datetime.now(tz=timezone.utc)
+    if now is None:
+        now = datetime.now(tz=timezone.utc)
 
     obj_classes: list[
         type[MonthEvents]
