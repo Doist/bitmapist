@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -8,7 +8,7 @@ from bitmapist.cohort import get_dates_data
 
 @pytest.fixture
 def events():
-    today = datetime.utcnow()
+    today = datetime.now(tz=timezone.utc)
     tomorrow = today + timedelta(days=1)
 
     mark_event("signup", 111, now=today)

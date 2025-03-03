@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from bitmapist import (
     BitOpAnd,
@@ -17,7 +17,7 @@ from bitmapist import (
 def test_mark_with_diff_days():
     mark_event("active", 123, track_hourly=True)
 
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
 
     # Month
     assert 123 in MonthEvents("active", now.year, now.month)
@@ -38,7 +38,7 @@ def test_mark_with_diff_days():
 
 
 def test_mark_unmark():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
 
     mark_event("active", 125)
     assert 125 in MonthEvents("active", now.year, now.month)
@@ -48,7 +48,7 @@ def test_mark_unmark():
 
 
 def test_mark_counts():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
 
     assert MonthEvents("active", now.year, now.month).get_count() == 0
 
@@ -59,7 +59,7 @@ def test_mark_counts():
 
 
 def test_mark_iter():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
     ev = MonthEvents("active", now.year, now.month)
 
     assert list(ev) == []
@@ -73,7 +73,7 @@ def test_mark_iter():
 
 
 def test_different_dates():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
     yesterday = now - timedelta(days=1)
 
     mark_event("active", 123, now=now)
@@ -88,7 +88,7 @@ def test_different_dates():
 
 
 def test_different_buckets():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
 
     mark_event("active", 123)
     mark_event("tasks:completed", 23232)
@@ -98,8 +98,8 @@ def test_different_buckets():
 
 
 def test_bit_operations():
-    now = datetime.utcnow()
-    last_month = datetime.utcnow() - timedelta(days=30)
+    now = datetime.now(tz=timezone.utc)
+    last_month = now - timedelta(days=30)
 
     # 123 has been active for two months
     mark_event("active", 123, now=now)
@@ -156,7 +156,7 @@ def test_bit_operations():
 
 
 def test_bit_operations_complex():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
     tom = now + timedelta(days=1)
 
     mark_event("task1", 111, now=now)
@@ -185,7 +185,7 @@ def test_bit_operations_complex():
 
 
 def test_bitop_key_sharing():
-    today = datetime.utcnow()
+    today = datetime.now(tz=timezone.utc)
 
     mark_event("task1", 111, now=today)
     mark_event("task2", 111, now=today)
@@ -207,7 +207,7 @@ def test_bitop_key_sharing():
 
 
 def test_events_marked():
-    now = datetime.utcnow()
+    now = datetime.now(tz=timezone.utc)
 
     assert MonthEvents("active", now.year, now.month).get_count() == 0
     assert MonthEvents("active", now.year, now.month).has_events_marked() is False

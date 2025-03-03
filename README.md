@@ -54,13 +54,13 @@ Can be installed very easily via:
 Setting things up:
 
 ```python
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from bitmapist import setup_redis, delete_all_events, mark_event,\
                       MonthEvents, WeekEvents, DayEvents, HourEvents,\
                       BitOpAnd, BitOpOr
 
-now = datetime.utcnow()
-last_month = datetime.utcnow() - timedelta(days=30)
+now = datetime.now(tz=timezone.utc)
+last_month = now - timedelta(days=30)
 ```
 
 Mark user 123 as active and has played a song:
