@@ -415,4 +415,4 @@ def get_lookup() -> TemplateLookup:
     return _LOOKUP
 
 
-__all__ = ["render_html_form", "render_html_data", "get_dates_data"]
+__all__ = ["get_dates_data", "render_html_data", "render_html_form"]

@@ -84,4 +84,4 @@ def wait_for_socket(host, port, seconds=3):
             break
         time.sleep(polling_interval)
     else:
-        raise RuntimeError("Service at %s:%d is unreachable" % (host, port))
+        raise RuntimeError(f"Service at {host}:{port} is unreachable")

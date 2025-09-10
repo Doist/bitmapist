@@ -292,7 +292,7 @@ def get_event_names(
     `prefix` value is used to filter only subset of keys
     """
     cli = get_redis(system)
-    expr = "trackist_%s*" % prefix
+    expr = f"trackist_{prefix}*"
     ret = set()
     for result in cli.scan_iter(match=expr, count=batch):
         result = result.decode()
@@ -400,6 +400,9 @@ class MixinEventsMisc:
             return NotImplemented
         return self.redis_key == other_key
 
+    def __hash__(self):
+        return hash(self.redis_key)
+
 
 class MixinCounts:
     """
@@ -427,9 +430,7 @@ class MixinContains:
 
     def __contains__(self, uuid):
         cli = get_redis(self.system)
-        if cli.getbit(self.redis_key, uuid):
-            return True
-        return False
+        return bool(cli.getbit(self.redis_key, uuid))
 
 
 class UniqueEvents(
