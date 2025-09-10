@@ -44,7 +44,7 @@ pytest = "*"
 pre-commit = "*"
 tox = "*"
 mypy = "*"
-ruff = "^0.4.1"
+ruff = ">=0.12.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -177,11 +177,9 @@ ignore = [
   "RET504",   # unnecessary-assign
 
   ## PT - flake8-pytest-style ##
-  "PT004",  # pytest-missing-fixture-name-underscore
   "PT012",  # pytest-raises-with-multiple-statements
 
   ## UP - pyupgrade ##
-  "UP038",  # non-pep604-isinstance
 
   ## B - flake8-bugbear ##
   "B008",   # function-call-in-default-argument
