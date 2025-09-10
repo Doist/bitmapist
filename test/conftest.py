@@ -1,5 +1,6 @@
 import atexit
 import os
+import shutil
 import socket
 import subprocess
 import time
@@ -9,15 +10,27 @@ import pytest
 from bitmapist import delete_all_events, setup_redis
 
 
+@pytest.fixture(scope="session")
+def redis_settings():
+    # Find the first redis-server in PATH, fallback to /usr/bin/redis-server
+    default_path = shutil.which("redis-server") or "/usr/bin/redis-server"
+    return {
+        "server_path": os.getenv("BITMAPIST_REDIS_SERVER_PATH", default_path),
+        "port": int(os.getenv("BITMAPIST_REDIS_PORT", "6399")),
+    }
+
+
 @pytest.fixture(scope="session", autouse=True)
-def redis_server():
+def redis_server(redis_settings):
     """Fixture starting the Redis server"""
     redis_host = "127.0.0.1"
-    redis_port = 6399
+    redis_port = redis_settings["port"]
     if is_socket_open(redis_host, redis_port):
         yield None
     else:
-        proc = start_redis_server(redis_port)
+        proc = start_redis_server(redis_settings["server_path"], redis_port)
+        # Give Redis a moment to start up
+        time.sleep(0.1)
         wait_for_socket(redis_host, redis_port)
         yield proc
         proc.terminate()
@@ -35,12 +48,12 @@ def clean_redis():
     delete_all_events()
 
 
-def start_redis_server(port):
+def start_redis_server(server_path, port):
     """Helper function starting Redis server"""
     devzero = open(os.devnull)
     devnull = open(os.devnull, "w")
     proc = subprocess.Popen(
-        ["/usr/bin/redis-server", "--port", str(port)],
+        [server_path, "--port", str(port)],
         stdin=devzero,
         stdout=devnull,
         stderr=devnull,
