@@ -36,7 +36,6 @@ include = [
 python = ">=3.9,<3.13"
 redis = ">=2.10,<6.0"
 python-dateutil = "*"
-future = ">=0.14.3,<0.19.0"
 Mako= "^1.0.4"
 
 [tool.poetry.dev-dependencies]
@@ -216,7 +215,6 @@ runtime-evaluated-decorators = [
 
 [tool.ruff.lint.isort]
 section-order = [
-  "future",
   "standard-library",
   "third-party",
   "first-party",
