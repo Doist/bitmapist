@@ -21,6 +21,7 @@ classifiers=[
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 packages=[ { include = "bitmapist" } ]
@@ -33,7 +34,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.14"
 redis = ">=2.10,<6.0"
 python-dateutil = "*"
 Mako= "^1.0.4"
