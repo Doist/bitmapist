@@ -21,6 +21,7 @@ classifiers=[
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 packages=[ { include = "bitmapist" } ]
@@ -33,7 +34,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.14"
 redis = ">=2.10,<6.0"
 python-dateutil = "*"
 Mako= "^1.0.4"
@@ -44,7 +45,7 @@ pytest = "*"
 pre-commit = "*"
 tox = "*"
 mypy = "*"
-ruff = "^0.4.1"
+ruff = ">=0.12.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -177,11 +178,9 @@ ignore = [
   "RET504",   # unnecessary-assign
 
   ## PT - flake8-pytest-style ##
-  "PT004",  # pytest-missing-fixture-name-underscore
   "PT012",  # pytest-raises-with-multiple-statements
 
   ## UP - pyupgrade ##
-  "UP038",  # non-pep604-isinstance
 
   ## B - flake8-bugbear ##
   "B008",   # function-call-in-default-argument
@@ -215,6 +214,7 @@ runtime-evaluated-decorators = [
 
 [tool.ruff.lint.isort]
 section-order = [
+  "future",
   "standard-library",
   "third-party",
   "first-party",
@@ -231,3 +231,7 @@ keep-runtime-typing = true
 
 [tool.ruff.format]
 docstring-code-format = true
+
+[[tool.mypy.overrides]]
+module = ["mako.*"]
+ignore_missing_imports = true

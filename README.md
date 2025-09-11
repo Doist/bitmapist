@@ -343,6 +343,11 @@ poetry install
 
 To run our tests will need to ensure a local redis server is installed.
 
+You can use these environment variables to tell the tests about Redis:
+
+* `BITMAPIST_REDIS_SERVER_PATH`: Path to the Redis server executable (defaults to the first one in the path or `/usr/bin/redis-server`)
+* `BITMAPIST_REDIS_PORT`: Port number for the Redis server (defaults to 6399)
+
 We use pytest to run unittests which you can run in a poetry shell with
 
 ```bash

@@ -81,6 +81,7 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 
 from __future__ import annotations
 
+import abc
 import calendar
 import threading
 from collections import defaultdict
@@ -292,7 +293,7 @@ def get_event_names(
     `prefix` value is used to filter only subset of keys
     """
     cli = get_redis(system)
-    expr = "trackist_%s*" % prefix
+    expr = f"trackist_{prefix}*"
     ret = set()
     for result in cli.scan_iter(match=expr, count=batch):
         result = result.decode()
@@ -400,6 +401,9 @@ class MixinEventsMisc:
             return NotImplemented
         return self.redis_key == other_key
 
+    def __hash__(self):
+        return hash(self.redis_key)
+
 
 class MixinCounts:
     """
@@ -427,9 +431,7 @@ class MixinContains:
 
     def __contains__(self, uuid):
         cli = get_redis(self.system)
-        if cli.getbit(self.redis_key, uuid):
-            return True
-        return False
+        return bool(cli.getbit(self.redis_key, uuid))
 
 
 class UniqueEvents(
@@ -452,8 +454,34 @@ class UniqueEvents(
 
 
 class GenericPeriodEvents(
-    MixinIter, MixinCounts, MixinContains, MixinEventsMisc, MixinBitOperations
+    MixinIter, MixinCounts, MixinContains, MixinEventsMisc, MixinBitOperations, abc.ABC
 ):
+    """
+    This is an abstract base class - subclasses must call super().__init__()
+    and implement their specific initialization logic. They all must set the
+    redis_key attribute in __init__.
+    """
+
+    def __init__(self, event_name: str, *, system: str = "default"):
+        self.event_name = event_name
+        self.system = system
+        # redis_key will be set by subclasses
+
+    @abc.abstractmethod
+    def delta(self, value: int):
+        """Return a new instance with the period offset by value."""
+        ...
+
+    @abc.abstractmethod
+    def period_start(self) -> datetime:
+        """Return the start datetime of this period."""
+        ...
+
+    @abc.abstractmethod
+    def period_end(self) -> datetime:
+        """Return the end datetime of this period."""
+        ...
+
     def next(self):
         """Next object in a datetime line"""
         return self.delta(value=1)
@@ -516,11 +544,10 @@ class MonthEvents(GenericPeriodEvents):
         return cls(event_name, dt.year, dt.month, system=system)
 
     def __init__(self, event_name, year=None, month=None, system="default"):
+        super().__init__(event_name, system=system)
         now = datetime.now(tz=timezone.utc)
-        self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
-        self.system = system
         self.redis_key = _prefix_key(event_name, f"{self.year}-{self.month}")
 
     def delta(self, value):
@@ -558,12 +585,11 @@ class WeekEvents(GenericPeriodEvents):
         return cls(event_name, dt_year, dt_week, system=system)
 
     def __init__(self, event_name: str, year=None, week=None, system="default"):
+        super().__init__(event_name, system=system)
         now = datetime.now(tz=timezone.utc)
         now_year, now_week, _ = now.isocalendar()
-        self.event_name = event_name
         self.year = not_none(year, now_year)
         self.week = not_none(week, now_week)
-        self.system = system
         self.redis_key = _prefix_key(event_name, f"W{self.year}-{self.week}")
 
     def delta(self, value):
@@ -597,12 +623,11 @@ class DayEvents(GenericPeriodEvents):
         return cls(event_name, dt.year, dt.month, dt.day, system=system)
 
     def __init__(self, event_name, year=None, month=None, day=None, system="default"):
+        super().__init__(event_name, system=system)
         now = datetime.now(tz=timezone.utc)
-        self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
         self.day = not_none(day, now.day)
-        self.system = system
         self.redis_key = _prefix_key(event_name, f"{self.year}-{self.month}-{self.day}")
 
     def delta(self, value):
@@ -643,13 +668,12 @@ class HourEvents(GenericPeriodEvents):
         hour: Optional[int] = None,
         system: str = "default",
     ):
+        super().__init__(event_name, system=system)
         now = datetime.now(tz=timezone.utc)
-        self.event_name = event_name
         self.year = not_none(year, now.year)
         self.month = not_none(month, now.month)
         self.day = not_none(day, now.day)
         self.hour = not_none(hour, now.hour)
-        self.system = system
         self.redis_key = _prefix_key(
             event_name, f"{self.year}-{self.month}-{self.day}-{self.hour}"
         )
