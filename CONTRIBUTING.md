@@ -9,7 +9,7 @@ series [How to Contribute to an Open Source Project on GitHub][egghead]
 
 If you want to contribute with code, please open a Pull Request. A few things to keep in mind:
 
-- The BSD project is released under the [BSD license](./LICENSE)
+- The project is released under the [BSD-3-Clause license](./LICENSE)
 - Please use [pre-commit](https://pre-commit.com/) to ensure some formatting rules and basic consistency checks are applied before each Git commit
 - Please add tests for your changes!
 - Please document any changes using the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) convention

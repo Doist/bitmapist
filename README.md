@@ -367,4 +367,4 @@ poetry run pytest
 
 Copyright: 2012 by Doist Ltd.
 
-License: BSD
+License: BSD-3-Clause
