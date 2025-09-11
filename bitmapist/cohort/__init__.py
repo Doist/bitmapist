@@ -59,7 +59,7 @@ Get the data and render it via HTML::
 
 :copyright: 2012 by Doist Ltd.
 :developer: Amir Salihefendic ( http://amix.dk )
-:license: BSD
+:license: BSD-3-Clause
 """
 
 from datetime import date, datetime, timedelta, timezone

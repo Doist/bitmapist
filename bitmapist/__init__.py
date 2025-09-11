@@ -76,7 +76,7 @@ Additionally you can supply an extra argument to mark_event to bypass the defaul
 
 :copyright: 2012 by Doist Ltd.
 :developer: Amir Salihefendic ( http://amix.dk )
-:license: BSD
+:license: BSD-3-Clause
 """
 
 from __future__ import annotations
