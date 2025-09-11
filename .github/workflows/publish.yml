@@ -29,3 +29,7 @@ jobs:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           uv publish
+
+      - name: Check published package
+        run: |
+          uv run --with bitmapist==$(uv version --short) --no-project -- python -c "import bitmapist"
