@@ -1,22 +1,29 @@
-[tool.poetry]
+[project]
 name = "bitmapist"
 version = "3.116"
-description="Implements a powerful analytics library using Redis bitmaps."
+description = "Implements a powerful analytics library using Redis bitmaps."
 authors = [
-    "Amir Salihefendic <dev@doist.com>",
-    "Doist Developers <dev@doist.com>",
+    { name = "Amir Salihefendic", email = "dev@doist.com" },
+    { name = "Doist Developers", email = "dev@doist.com" },
 ]
-license="BSD-3-Clause"
+requires-python = ">=3.9,<3.14"
 readme = "README.md"
-repository = "https://github.com/Doist/bitmapist"
-keywords=[ "redis", "bitmap", "analytics", "bitmaps", "realtime", "cohort", ]
-classifiers=[
+license = "BSD-3-Clause"
+keywords = [
+    "redis",
+    "bitmap",
+    "analytics",
+    "bitmaps",
+    "realtime",
+    "cohort",
+]
+classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)",
+    'License :: OSI Approved :: BSD 3-Clause "New" or "Revised" License (BSD-3-Clause)',
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -24,32 +31,48 @@ classifiers=[
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-packages=[ { include = "bitmapist" } ]
-exclude = ['tests/']
-include = [
-    'AUTHORS',
-    'README.md',
-    'static/bitmapist.png',
-    'static/bitmapist.svg',
+dependencies = [
+    "redis>=2.10,<6.0",
+    "python-dateutil",
+    "Mako>=1.0.4,<2",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<3.14"
-redis = ">=2.10,<6.0"
-python-dateutil = "*"
-Mako= "^1.0.4"
+[project.urls]
+Repository = "https://github.com/Doist/bitmapist"
 
-[tool.poetry.dev-dependencies]
-pytest-runner = "*"
-pytest = "*"
-pre-commit = "*"
-tox = "*"
-mypy = "*"
-ruff = ">=0.12.0"
+[dependency-groups]
+dev = [
+    "pytest-runner",
+    "pytest",
+    "pre-commit",
+    "tox",
+    "mypy",
+    "ruff>=0.12.0",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "bitmapist",
+    "AUTHORS",
+    "README.md",
+    "static/bitmapist.png",
+    "static/bitmapist.svg",
+]
+exclude = ["tests/"]
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "bitmapist",
+    "AUTHORS",
+    "README.md",
+    "static/bitmapist.png",
+    "static/bitmapist.svg",
+]
+exclude = ["tests/"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 # By default, always show source code snippets.
