@@ -162,11 +162,9 @@ ignore = [
   "RUF002",  # ambiguous-unicode-character-docstring
   "RUF003",  # ambiguous-unicode-character-comment
   "RUF012",  # mutable-class-default
+  "RUF200",  # invalid-pyproject-toml
 
-  # Enable when Poetry supports PEP 621 and we migrate our confguration to it.
-  # See: https://github.com/python-poetry/poetry-core/pull/567
-  "RUF200",
-
+  ## S - flake8-bandit ##
   "S101",  # assert
   "S104",  # hardcoded-bind-all-interfaces
   "S105",  # hardcoded-password-string
@@ -183,9 +181,6 @@ ignore = [
   "SIM102",  # collapsible-if
   "SIM114",  # if-with-same-arms
   "SIM117",  # multiple-with-statements
-
-  # Enable when the rule is out of preview and false-positives are handled.
-  # See: https://docs.astral.sh/ruff/rules/in-dict-keys/
   "SIM118",  # in-dict-keys
 
   ## TRY - tryceratops ##
@@ -201,8 +196,6 @@ ignore = [
 
   ## PT - flake8-pytest-style ##
   "PT012",  # pytest-raises-with-multiple-statements
-
-  ## UP - pyupgrade ##
 
   ## B - flake8-bugbear ##
   "B008",   # function-call-in-default-argument
