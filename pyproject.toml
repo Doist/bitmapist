@@ -6,14 +6,14 @@ authors = [
     "Amir Salihefendic <dev@doist.com>",
     "Doist Developers <dev@doist.com>",
 ]
-license="BSD"
+license="BSD-3-Clause"
 readme = "README.md"
 repository = "https://github.com/Doist/bitmapist"
 keywords=[ "redis", "bitmap", "analytics", "bitmaps", "realtime", "cohort", ]
 classifiers=[
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
