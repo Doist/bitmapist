@@ -360,12 +360,21 @@ uv run pytest
 
 ## Releasing new versions
 
-- Bump version in `pyproject.toml` (or use `uv version`)
-- Update the CHANGELOG
-- Commit the changes with a commit message "Version X.X.X"
-- Tag the current commit with `vX.X.X`
-- Create a new release on GitHub named `vX.X.X`
-- GitHub Actions will publish the new version to PyPI for you
+1. Bump version in `pyproject.toml` (or use `uv version`)
+    ```sh
+    uv version --bump minor
+    ```
+1. Update the CHANGELOG
+1. Commit the changes with a commit message "Version X.X.X"
+    ```sh
+    git commit -m "Version $(uv version --short)"
+    ```
+1. Tag the current commit with `vX.X.X`
+    ```sh
+    git tag -a -m "Release $(uv version --short)" "v$(uv version --short)"
+    ```
+1. Create a new release on GitHub named `vX.X.X`
+1. GitHub Actions will publish the new version to PyPI for you
 
 ## Legal
 
