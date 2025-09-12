@@ -16,21 +16,21 @@ jobs:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
         with:
+          version: "latest"
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |
-          python -m pip install poetry
-          poetry install
+          uv sync --locked --all-extras --dev
 
       - name: Install redis
         run: |
           sudo apt-get install redis -y
 
       - name: Run tests
-        run: poetry run pytest -vv
+        run: uv run pytest -vv

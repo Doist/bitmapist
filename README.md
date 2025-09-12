@@ -43,6 +43,10 @@ Can be installed very easily via:
 
     $ pip install bitmapist
 
+Or, if you use `uv`:
+
+    $ uv add bitmapist
+
 
 # Ports
 
@@ -331,12 +335,12 @@ Please see our guide [here](./CONTRIBUTING.md)
 
 ## Local Development
 
-We use Poetry for dependency management & packaging.  Please see [here for setup instructions](https://python-poetry.org/docs/#installation).
+We use `uv` for dependency management & packaging.  Please see [here for setup instructions](https://docs.astral.sh/uv/getting-started/).
 
-Once you have Poetry installed, you can run the following to install the dependencies in a virtual environment:
+Once you have `uv` installed, you can run the following to install the dependencies in a virtual environment:
 
 ```bash
-poetry install
+uv sync
 ```
 
 ## Testing
@@ -348,20 +352,20 @@ You can use these environment variables to tell the tests about Redis:
 * `BITMAPIST_REDIS_SERVER_PATH`: Path to the Redis server executable (defaults to the first one in the path or `/usr/bin/redis-server`)
 * `BITMAPIST_REDIS_PORT`: Port number for the Redis server (defaults to 6399)
 
-We use pytest to run unittests which you can run in a poetry shell with
+We use `pytest` to run unit tests, which you can run with:
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 ## Releasing new versions
 
-- Bump version in `pyproject.toml`
+- Bump version in `pyproject.toml` (or use `uv version`)
 - Update the CHANGELOG
 - Commit the changes with a commit message "Version X.X.X"
 - Tag the current commit with `vX.X.X`
 - Create a new release on GitHub named `vX.X.X`
-- GitHub Actions will publish the new version to PIP for you
+- GitHub Actions will publish the new version to PyPI for you
 
 ## Legal
 
