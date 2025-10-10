@@ -304,7 +304,9 @@ def get_dates_data(
                 select2b_events = fn_get_events(select2b, delta_now, system)
                 select2_events = BitOpAnd(system, select2_events, select2b_events)
 
-            if not select2_events.has_events_marked():
+            # Check if there are actually any events (not just if the key exists)
+            # BitOpAnd creates a key even when result is 0, so we must check the count
+            if len(select2_events) == 0:
                 result.append("")
                 continue
 
