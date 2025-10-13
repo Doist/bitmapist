@@ -389,7 +389,9 @@ class MixinEventsMisc:
 
     def has_events_marked(self):
         cli = get_redis(self.system)
-        return bool(cli.exists(self.redis_key))
+        # Note: bitcount() returns 0 if the key doesn't exist
+        # https://redis.io/docs/latest/commands/bitcount/
+        return cli.bitcount(self.redis_key) > 0
 
     def delete(self):
         cli = get_redis(self.system)

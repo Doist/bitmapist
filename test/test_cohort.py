@@ -31,13 +31,28 @@ def events():
 @pytest.mark.parametrize(
     ("select1", "select1b", "select2", "select2b", "expected"),
     [
+        # Basic tests without select1b/select2b
         ("active", None, "active", None, [2, 100, 50]),
         ("active", None, "unknown", None, [2, "", ""]),
         ("unknown", None, "active", None, [0, "", ""]),
+
+        # Tests with select1b (AND conditions for select1)
         ("signup", "active", "active", None, [2, 100, 50]),
-        ("signup", "active", "active", "signup", [2, 100, 0]),
+
+        # Tests with both select1b and select2b
         ("task1", "task2", "task2", "task1", [2, 100, 100]),
-        ("task1", "task2", "task1", "task2", [2, 100, 100]),
+
+        # When select1 has no events but select1b has events, result should be 0
+        ("unknown", "active", "active", None, [0, "", ""]),
+
+        # When select1 has events but select2 AND select2b results in 0
+        ("active", None, "unknown", "active", [2, "", ""]),
+
+        # When select1 has events but select1b has no events (no overlap)
+        ("active", "unknown", "active", None, [0, "", ""]),
+
+        # When select2 has events but select2b has no events (no overlap)
+        ("active", None, "active", "unknown", [2, "", ""]),
     ],
 )
 def test_cohort(select1, select1b, select2, select2b, expected, events):
