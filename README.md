@@ -358,6 +358,10 @@ We use `pytest` to run unit tests, which you can run with:
 uv run pytest
 ```
 
+> [!TIP]
+> You can also run tests against the [bitmapist-server](https://github.com/Doist/bitmapist-server) backend instead of Redis.
+> To do this, set the `BITMAPIST_REDIS_SERVER_PATH` variable to the path of the `bitmapist-server` executable.
+
 ## Releasing new versions
 
 1. Bump version in `pyproject.toml` (or use `uv version`)
