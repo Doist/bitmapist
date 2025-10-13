@@ -1,6 +1,6 @@
 [project]
 name = "bitmapist"
-version = "3.117"
+version = "3.118"
 description = "Implements a powerful analytics library using Redis bitmaps."
 authors = [
     { name = "Amir Salihefendic", email = "dev@doist.com" },
