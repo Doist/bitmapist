@@ -1,43 +1,42 @@
 ![bitmapist](https://raw.githubusercontent.com/Doist/bitmapist/master/static/bitmapist.png "bitmapist")
 
-
 [![Build Status](https://travis-ci.org/Doist/bitmapist.svg?branch=master)](https://travis-ci.org/Doist/bitmapist)
 
-**NEW!** Try out our new standalone [bitmapist-server](https://github.com/Doist/bitmapist-server), which improves memory efficiency 443 times and makes your setup much cheaper to run (and more scaleable). It's fully compatiable with bitmapist that runs on Redis.
+# Bitmapist: a powerful analytics library for Redis
 
-# bitmapist: a powerful analytics library for Redis
+Bitmapist makes it possible to implement real-time, highly scalable analytics. The library is very easy to use, enabling you to create reports easily.
 
-This Python library makes it possible to implement real-time, highly scalable analytics that can answer following questions:
+Leveraging Redis bitmaps, you can store events for millions of users using a very little amount of memory (megabytes).
 
-* Has user 123 been online today? This week? This month?
-* Has user 123 performed action "X"?
-* How many users have been active this month? This hour?
-* How many unique users have performed action "X" this week?
-* How many % of users that were active last week are still active?
-* How many % of users that were active last month are still active this month?
-* What users performed action "X"?
+> [!TIP]
+> Instead of Redis as a backing store, consider using [bitmapist-server](https://github.com/Doist/bitmapist-server).
+>
+> It is our custom data store that exposes a (partial) Redis-compatible API, fully compatible with Bitmapist. It is 443x more memory efficient for this particular use case, improving scalability and cost-effectiveness.
 
-This library is very easy to use and enables you to create your own reports easily.
+## Use cases
 
-Using Redis bitmaps you can store events for millions of users in a very little amount of memory (megabytes).
-You should be careful about using huge ids as this could require larger amounts of memory. Ids should be in range [0, 2^32).
+Bitmapist can answer questions like:
 
-Additionally bitmapist can generate cohort graphs that can do following:
-* Cohort over user retention
-* How many % of users that were active last [days, weeks, months] are still active?
-* How many % of users that performed action X also performed action Y (and this over time)
-* And a lot of other things!
+- Has user 123 been online today? This week? This month?
+- Has user 123 performed action "X"?
+- How many users have been active this month? This hour?
+- How many unique users have performed action "X" this week?
+- How many % of users that were active last week are still active?
+- How many % of users that were active last month are still active this month?
+- What users performed action "X"?
 
-If you want to read more about bitmaps please read following:
+Additionally, it can generate cohort graphs that can do following:
 
-* http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
-* http://redis.io/commands/setbit
-* http://en.wikipedia.org/wiki/Bit_array
-* http://www.slideshare.net/crashlytics/crashlytics-on-redis-analytics
+- Cohort over user retention
+- How many % of users that were active last [days, weeks, months] are still active?
+- How many % of users that performed action X also performed action Y (and this over time)
+- And a lot of other things!
 
+### Caveat: Avoid large IDs
 
+You should be careful about using large IDs as this will require larger amounts of memory. IDs should be in range `[0, 2^32)`.
 
-# Installation
+## Installation
 
 Can be installed very easily via:
 
@@ -47,13 +46,7 @@ Or, if you use `uv`:
 
     $ uv add bitmapist
 
-
-# Ports
-
-* PHP port: https://github.com/jeremyFreeAgent/Bitter
-
-
-# Examples
+## Usage and examples
 
 Setting things up:
 
@@ -82,7 +75,6 @@ assert 123 in MonthEvents('song:played', now.year, now.month)
 assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 ```
 
-
 How many users have been active this week?:
 
 ```python
@@ -95,7 +87,6 @@ Iterate over all users active this week:
 for uid in WeekEvents('active'):
     print(uid)
 ```
-
 
 If you're interested in "current events", you can omit extra `now.whatever`
 arguments. Events will be populated with current time automatically.
@@ -150,7 +141,6 @@ if ev.period_end() < now:
 
 ```
 
-
 As something new tracking hourly is disabled (to save memory!) To enable it as default do::
 
 ```python
@@ -163,7 +153,6 @@ Additionally you can supply an extra argument to `mark_event` to bypass the defa
 ```python
 mark_event('active', 123, track_hourly=False)
 ```
-
 
 ### Unique events
 
@@ -213,7 +202,6 @@ for uid in premium & active_today:
 To get the best of two worlds you can mark unique event and regular
 bitmapist events at the same time.
 
-
 ```python
 def premium_up(uid):
     # called when user promoted to premium
@@ -221,7 +209,6 @@ def premium_up(uid):
     mark_event('premium', uid, track_unique=True)
 
 ```
-
 
 ### Perform bit operations
 
@@ -240,12 +227,12 @@ assert 123 in active_2_months
 
 Alternatively, you can use standard Python syntax for bitwise operations.
 
-
 ```python
 last_month_event = MonthEvents('active', last_month.year, last_month.month)
 this_month_event = MonthEvents('active', now.year, now.month)
 active_two_months = last_month_event & this_month_event
 ```
+
 Operators `&`, `|`, `^` and `~` supported.
 
 Work with nested bit operations (imagine what you can do with this ;-))!
@@ -265,21 +252,23 @@ assert 123 in active_2_months
 active_2_months.delete()
 ```
 
-
 ### Deleting
 
 If you want to permanently remove marked events for any time period you can use the `delete()` method:
+
 ```python
 last_month_event = MonthEvents('active', last_month.year, last_month.month)
 last_month_event.delete()
 ```
 
 If you want to remove all bitmapist events use:
+
 ```python
 bitmapist.delete_all_events()
 ```
 
 When using Bit Operations (ie `BitOpAnd`) you can (and probably should) delete the results unless you want them cached. There are different ways to go about this:
+
 ```python
 active_2_months = BitOpAnd(
     MonthEvents('active', last_month.year, last_month.month),
@@ -295,12 +284,12 @@ bitmapist.delete_runtime_bitop_keys()
 bitmapist.delete_temporary_bitop_keys()
 ```
 
-
-# bitmapist cohort
+## Cohorts
 
 With bitmapist cohort you can get a form and a table rendering of the data you keep in bitmapist. If this sounds confusing [please look at Mixpanel](https://mixpanel.com/retention/).
 
 Here's a simple example of how to generate a form and a rendering of the data you have inside bitmapist:
+
 ```python
 from bitmapist import cohort
 
@@ -328,6 +317,14 @@ This will render something similar to this:
 
 ![bitmapist cohort screenshot](https://raw.githubusercontent.com/Doist/bitmapist/master/static/cohort_screenshot.png "bitmapist cohort screenshot")
 
+## References
+
+If you want to read more about bitmaps please read following:
+
+- http://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/
+- http://redis.io/commands/setbit
+- http://en.wikipedia.org/wiki/Bit_array
+- http://www.slideshare.net/crashlytics/crashlytics-on-redis-analytics
 
 ## Contributing
 
@@ -335,7 +332,7 @@ Please see our guide [here](./CONTRIBUTING.md)
 
 ## Local Development
 
-We use `uv` for dependency management & packaging.  Please see [here for setup instructions](https://docs.astral.sh/uv/getting-started/).
+We use `uv` for dependency management & packaging. Please see [here for setup instructions](https://docs.astral.sh/uv/getting-started/).
 
 Once you have `uv` installed, you can run the following to install the dependencies in a virtual environment:
 
@@ -349,8 +346,8 @@ To run our tests will need to ensure a local redis server is installed.
 
 You can use these environment variables to tell the tests about Redis:
 
-* `BITMAPIST_REDIS_SERVER_PATH`: Path to the Redis server executable (defaults to the first one in the path or `/usr/bin/redis-server`)
-* `BITMAPIST_REDIS_PORT`: Port number for the Redis server (defaults to 6399)
+- `BITMAPIST_REDIS_SERVER_PATH`: Path to the Redis server executable (defaults to the first one in the path or `/usr/bin/redis-server`)
+- `BITMAPIST_REDIS_PORT`: Port number for the Redis server (defaults to 6399)
 
 We use `pytest` to run unit tests, which you can run with:
 
@@ -365,18 +362,18 @@ uv run pytest
 ## Releasing new versions
 
 1. Bump version in `pyproject.toml` (or use `uv version`)
-    ```sh
-    uv version --bump minor
-    ```
+   ```sh
+   uv version --bump minor
+   ```
 1. Update the CHANGELOG
 1. Commit the changes with a commit message "Version X.X.X"
-    ```sh
-    git commit -m "Version $(uv version --short)"
-    ```
+   ```sh
+   git commit -m "Version $(uv version --short)"
+   ```
 1. Tag the current commit with `vX.X.X`
-    ```sh
-    git tag -a -m "Release $(uv version --short)" "v$(uv version --short)"
-    ```
+   ```sh
+   git tag -a -m "Release $(uv version --short)" "v$(uv version --short)"
+   ```
 1. Create a new release on GitHub named `vX.X.X`
 1. GitHub Actions will publish the new version to PyPI for you
 
