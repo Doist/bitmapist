@@ -37,10 +37,10 @@ def redis_server(redis_settings):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_redis_for_bitmapist():
-    setup_redis("default", "localhost", 6399)
-    setup_redis("default_copy", "localhost", 6399)
-    setup_redis("db1", "localhost", 6399, db=1)
+def setup_redis_for_bitmapist(redis_settings):
+    setup_redis("default", "localhost", redis_settings["port"])
+    setup_redis("default_copy", "localhost", redis_settings["port"])
+    setup_redis("db1", "localhost", redis_settings["port"], db=1)
 
 
 @pytest.fixture(autouse=True)
@@ -52,8 +52,9 @@ def start_redis_server(server_path, port):
     """Helper function starting Redis server"""
     devzero = open(os.devnull)
     devnull = open(os.devnull, "w")
+    command = get_redis_command(server_path, port)
     proc = subprocess.Popen(
-        [server_path, "--port", str(port)],
+        command,
         stdin=devzero,
         stdout=devnull,
         stderr=devnull,
@@ -61,6 +62,14 @@ def start_redis_server(server_path, port):
     )
     atexit.register(lambda: proc.terminate())
     return proc
+
+
+def get_redis_command(server_path, port):
+    """Run with --version to determine if this is redis or bitmapist-server"""
+    output = subprocess.check_output([server_path, "--version"])
+    if b"bitmapist-server" in output:
+        return [server_path, "-addr", f"0.0.0.0:{port}"]
+    return [server_path, "--port", str(port)]
 
 
 def is_socket_open(host, port):
