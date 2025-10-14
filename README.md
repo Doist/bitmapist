@@ -317,10 +317,6 @@ This will render something similar to this:
 
 ![bitmapist cohort screenshot](https://raw.githubusercontent.com/Doist/bitmapist/master/static/cohort_screenshot.png "bitmapist cohort screenshot")
 
-## Ports
-
-- PHP port: https://github.com/jeremyFreeAgent/Bitter
-
 ## References
 
 If you want to read more about bitmaps please read following:
