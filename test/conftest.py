@@ -5,7 +5,9 @@ import socket
 import subprocess
 import time
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 import pytest
 
@@ -15,26 +17,62 @@ from bitmapist import delete_all_events, get_redis, setup_redis
 BACKEND_REDIS = "redis"
 BACKEND_BITMAPIST_SERVER = "bitmapist-server"
 
+
+@dataclass
+class BackendConfig:
+    """Configuration for a backend server"""
+
+    port_env: str
+    default_port: int
+    path_env: str
+    binary_name: str
+    fallback_path: str | None
+    install_hint: str
+    start_args: Callable[[int, Path], list[str]]
+
+
+@dataclass
+class BackendStatus:
+    """Status of a backend server"""
+
+    available: bool
+    mode: str | None  # "docker", "native", or None
+    port: int
+    binary_path: str | None
+
+
 # Single source of truth for backend configuration
 BACKEND_CONFIGS = {
-    BACKEND_REDIS: {
-        "port_env": "BITMAPIST_REDIS_PORT",
-        "default_port": 6399,
-        "path_env": "BITMAPIST_REDIS_SERVER_PATH",
-        "binary_name": "redis-server",
-        "fallback_path": "/usr/bin/redis-server",
-        "install_hint": "Install redis-server using your package manager",
-        "start_args": lambda port: ["--port", str(port)],
-    },
-    BACKEND_BITMAPIST_SERVER: {
-        "port_env": "BITMAPIST_SERVER_PORT",
-        "default_port": 6400,
-        "path_env": "BITMAPIST_SERVER_PATH",
-        "binary_name": "bitmapist-server",
-        "fallback_path": None,
-        "install_hint": "Download from https://github.com/Doist/bitmapist-server/releases",
-        "start_args": lambda port: ["-addr", f"0.0.0.0:{port}"],
-    },
+    BACKEND_REDIS: BackendConfig(
+        port_env="BITMAPIST_REDIS_PORT",
+        default_port=6399,
+        path_env="BITMAPIST_REDIS_SERVER_PATH",
+        binary_name="redis-server",
+        fallback_path="/usr/bin/redis-server",
+        install_hint="Install redis-server using your package manager",
+        start_args=lambda port, temp_dir: [
+            "--port",
+            str(port),
+            "--dir",
+            str(temp_dir),
+            "--dbfilename",
+            "redis.rdb",
+        ],
+    ),
+    BACKEND_BITMAPIST_SERVER: BackendConfig(
+        port_env="BITMAPIST_SERVER_PORT",
+        default_port=6400,
+        path_env="BITMAPIST_SERVER_PATH",
+        binary_name="bitmapist-server",
+        fallback_path=None,
+        install_hint="Download from https://github.com/Doist/bitmapist-server/releases",
+        start_args=lambda port, temp_dir: [
+            "-addr",
+            f"0.0.0.0:{port}",
+            "-db",
+            str(temp_dir / "bitmapist.db"),
+        ],
+    ),
 }
 
 
@@ -43,6 +81,50 @@ def is_socket_open(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(0.1)
     return sock.connect_ex((host, port)) == 0
+
+
+def get_backend_status(backend_config):
+    """
+    Check if a backend is available and how.
+
+    Returns BackendStatus with:
+    - available: bool
+    - mode: "docker", "native", or None
+    - port: int
+    - binary_path: str or None
+    """
+    port = int(os.getenv(backend_config.port_env, str(backend_config.default_port)))
+
+    # Check if already running (Docker or external)
+    if is_socket_open("127.0.0.1", port):
+        return BackendStatus(
+            available=True,
+            mode="docker",
+            port=port,
+            binary_path=None,
+        )
+
+    # Check for binary
+    binary_path = os.getenv(backend_config.path_env)
+    if not binary_path:
+        binary_path = shutil.which(backend_config.binary_name)
+    if not binary_path and backend_config.fallback_path:
+        binary_path = backend_config.fallback_path
+
+    if binary_path and Path(binary_path).exists():
+        return BackendStatus(
+            available=True,
+            mode="native",
+            port=port,
+            binary_path=binary_path,
+        )
+
+    return BackendStatus(
+        available=False,
+        mode=None,
+        port=port,
+        binary_path=None,
+    )
 
 
 @pytest.fixture(scope="session")
@@ -55,25 +137,8 @@ def available_backends():
     backends = []
 
     for backend_name, config in BACKEND_CONFIGS.items():
-        port = int(os.getenv(config["port_env"], str(config["default_port"])))
-
-        # Check if server is already running (Docker or external)
-        if is_socket_open("127.0.0.1", port):
-            backends.append(backend_name)
-            continue
-
-        # Check if binary is available
-        path_str = os.getenv(config["path_env"])
-        if path_str and Path(path_str).exists():
-            backends.append(backend_name)
-            continue
-
-        # Check for binary in PATH or fallback location
-        if shutil.which(config["binary_name"]):
-            backends.append(backend_name)
-            continue
-
-        if config["fallback_path"] and Path(config["fallback_path"]).exists():
+        status = get_backend_status(config)
+        if status.available:
             backends.append(backend_name)
 
     if not backends:
@@ -113,11 +178,11 @@ def backend_settings(backend_type, available_backends):
     config = BACKEND_CONFIGS[backend_type]
 
     # Try env var first, then auto-detect
-    default_path = shutil.which(config["binary_name"])
-    if not default_path and config["fallback_path"]:
-        default_path = config["fallback_path"]
-    server_path = os.getenv(config["path_env"], default_path or "")
-    port = int(os.getenv(config["port_env"], str(config["default_port"])))
+    default_path = shutil.which(config.binary_name)
+    if not default_path and config.fallback_path:
+        default_path = config.fallback_path
+    server_path = os.getenv(config.path_env, default_path or "")
+    port = int(os.getenv(config.port_env, str(config.default_port)))
 
     return {
         "server_path": server_path,
@@ -127,7 +192,7 @@ def backend_settings(backend_type, available_backends):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def backend_server(backend_settings):
+def backend_server(backend_settings, tmp_path_factory):
     """
     Smart backend server management with auto-detection.
 
@@ -148,7 +213,10 @@ def backend_server(backend_settings):
     server_path = backend_settings.get("server_path")
     if server_path and Path(server_path).exists():
         # Binary found, start it
-        proc = start_backend_server(server_path, port, backend_type)
+        temp_dir = tmp_path_factory.mktemp(f"{backend_type}-data")
+        config = BACKEND_CONFIGS[backend_type]
+        command = [server_path, *config.start_args(port, temp_dir)]
+        proc = start_backend_server(command)
         wait_for_socket(host, port)
         yield proc
         proc.terminate()
@@ -161,10 +229,10 @@ def backend_server(backend_settings):
         f"Option 1 (Recommended): Start with Docker\n"
         f"  docker compose up -d\n\n"
         f"Option 2: Install {backend_type} binary\n"
-        f"  {config['install_hint']}\n"
+        f"  {config.install_hint}\n"
         f"  Ensure it's in your PATH\n\n"
         f"Option 3: Specify binary path\n"
-        f"  export {config['path_env']}=/path/to/{backend_type}\n\n"
+        f"  export {config.path_env}=/path/to/{backend_type}\n\n"
         f"  pytest"
     )
 
@@ -213,11 +281,31 @@ def clean_redis():
     delete_all_events()
 
 
-def start_backend_server(server_path, port, backend_type):
+def pytest_report_header(config):
+    """Add backend information to pytest header"""
+    headers = []
+
+    for backend_name, backend_config in BACKEND_CONFIGS.items():
+        status = get_backend_status(backend_config)
+
+        if status.mode == "docker":
+            headers.append(
+                f"{backend_name}: Docker/external server on port {status.port}"
+            )
+        elif status.mode == "native":
+            headers.append(
+                f"{backend_name}: Native binary ({status.binary_path}) on port {status.port}"
+            )
+        else:
+            headers.append(f"{backend_name}: Not available")
+
+    return headers
+
+
+def start_backend_server(command):
     """Helper function starting backend server (Redis or bitmapist-server)"""
     devzero = open(os.devnull)
     devnull = open(os.devnull, "w")
-    command = get_backend_command(server_path, port, backend_type)
     proc = subprocess.Popen(
         command,
         stdin=devzero,
@@ -227,15 +315,6 @@ def start_backend_server(server_path, port, backend_type):
     )
     atexit.register(lambda: proc.terminate())
     return proc
-
-
-def get_backend_command(server_path, port, backend_type):
-    """
-    Build the command to start the backend server.
-    No need to detect which server type - we already know from backend_type.
-    """
-    config = BACKEND_CONFIGS[backend_type]
-    return [server_path, *config["start_args"](port)]
 
 
 def wait_for_socket(host, port, seconds=10):
