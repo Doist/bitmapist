@@ -17,6 +17,9 @@ from bitmapist import delete_all_events, get_redis, setup_redis
 BACKEND_REDIS = "redis"
 BACKEND_BITMAPIST_SERVER = "bitmapist-server"
 
+# Safety threshold for existing keys
+SAFE_EXISTING_KEY_THRESHOLD = 20
+
 
 @dataclass
 class BackendConfig:
@@ -251,29 +254,31 @@ def setup_redis_for_bitmapist(backend_settings):
 def check_existing_data(backend_settings, setup_redis_for_bitmapist):
     """
     Check for existing data at session start.
-    Warns if data exists but doesn't delete it (safety first).
+    Fails if too many keys exist (likely production data).
+    Warns if small number of keys from previous test runs.
     """
     cli = get_redis("default")
     existing_keys = cli.keys("trackist_*")
 
-    if existing_keys:
-        warnings.warn(
-            f"\n{'=' * 70}\n"
-            f"WARNING: Found {len(existing_keys)} existing bitmapist keys in backend.\n"
-            f"Backend: {backend_settings['backend_type']} on port {backend_settings['port']}\n"
-            f"\n"
-            f"This may indicate:\n"
-            f"1. Docker containers with data from previous runs\n"
-            f"2. Shared backend being used by multiple projects\n"
-            f"3. Production data in the backend (DANGER!)\n"
-            f"\n"
-            f"Tests will continue but results may be affected by existing data.\n"
-            f"\n"
-            f"To clean: docker compose down -v (removes volumes), or manually FLUSHDB.\n"
-            f"{'=' * 70}\n",
-            UserWarning,
-            stacklevel=2,
+    if not existing_keys:
+        return
+
+    backend = f"{backend_settings['backend_type']}:{backend_settings['port']}"
+
+    if len(existing_keys) > SAFE_EXISTING_KEY_THRESHOLD:
+        pytest.fail(
+            f"Found {len(existing_keys)} existing bitmapist keys in {backend}. "
+            f"This exceeds safe threshold ({SAFE_EXISTING_KEY_THRESHOLD}). "
+            f"Refusing to run tests to avoid data loss."
         )
+
+    # Below threshold - just warn
+    warnings.warn(
+        f"Found {len(existing_keys)} existing keys in {backend} "
+        f"(likely from previous test runs). These will be deleted during test cleanup.",
+        UserWarning,
+        stacklevel=2,
+    )
 
 
 @pytest.fixture(autouse=True)
