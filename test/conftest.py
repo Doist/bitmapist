@@ -149,7 +149,6 @@ def backend_server(backend_settings):
     if server_path and Path(server_path).exists():
         # Binary found, start it
         proc = start_backend_server(server_path, port, backend_type)
-        time.sleep(0.1)
         wait_for_socket(host, port)
         yield proc
         proc.terminate()
@@ -239,18 +238,18 @@ def get_backend_command(server_path, port, backend_type):
     return [server_path, *config["start_args"](port)]
 
 
-def wait_for_socket(host, port, seconds=3):
+def wait_for_socket(host, port, seconds=10):
     """Check if socket is up for :param:`seconds` sec, raise an error otherwise"""
     polling_interval = 0.1
     iterations = int(seconds / polling_interval)
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(0.1)
     for _ in range(iterations):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(0.1)
         result = sock.connect_ex((host, port))
+        sock.close()
         if result == 0:
-            sock.close()
-            break
+            return
         time.sleep(polling_interval)
-    else:
-        raise RuntimeError(f"Service at {host}:{port} is unreachable")
+
+    raise RuntimeError(f"Service at {host}:{port} is unreachable")
