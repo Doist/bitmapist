@@ -4,3 +4,4 @@
 /dist
 .tox
 dump.rdb
+bitmapist.db
