@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --locked --all-extras --dev
+          uv sync --locked
 
       - name: Install Redis
         if: matrix.backend == 'redis'
