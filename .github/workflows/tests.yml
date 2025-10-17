@@ -10,10 +10,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    name: "Python ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }} / ${{ matrix.backend }}"
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        backend: ['redis', 'bitmapist-server']
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v5
@@ -26,11 +27,53 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --locked --all-extras --dev
+          uv sync --locked
 
-      - name: Install redis
+      - name: Install Redis
+        if: matrix.backend == 'redis'
         run: |
           sudo apt-get install redis -y
+
+      - name: Get bitmapist-server latest version
+        if: matrix.backend == 'bitmapist-server'
+        id: bitmapist-version
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/Doist/bitmapist-server/releases/latest | jq -r .tag_name)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Cache bitmapist-server
+        if: matrix.backend == 'bitmapist-server'
+        id: cache-bitmapist
+        uses: actions/cache@v4
+        with:
+          path: ~/bitmapist-server
+          key: bitmapist-server-${{ steps.bitmapist-version.outputs.version }}
+
+      - name: Download bitmapist-server
+        if: matrix.backend == 'bitmapist-server' && steps.cache-bitmapist.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/Doist/bitmapist-server/releases/latest/download/bitmapist-server-linux-amd64.tar.gz
+          tar -xzf bitmapist-server-linux-amd64.tar.gz
+          chmod +x bitmapist-server
+          mv bitmapist-server ~/bitmapist-server
+
+      - name: Install bitmapist-server
+        if: matrix.backend == 'bitmapist-server'
+        run: |
+          sudo cp ~/bitmapist-server /usr/local/bin/bitmapist-server
+          sudo chmod +x /usr/local/bin/bitmapist-server
+
+      - name: Verify Redis is available
+        if: matrix.backend == 'redis'
+        run: |
+          command -v redis-server || exit 1
+          redis-server --version
+
+      - name: Verify bitmapist-server is available
+        if: matrix.backend == 'bitmapist-server'
+        run: |
+          command -v bitmapist-server || exit 1
+          bitmapist-server --version
 
       - name: Run tests
         run: uv run pytest -vv

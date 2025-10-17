@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from bitmapist import (
     BitOpAnd,
     BitOpOr,
@@ -247,6 +249,8 @@ def test_bit_operations_magic():
     assert list(~foo & bar) == [3]
 
 
-def test_year_events():
+def test_year_events(backend_type):
+    if backend_type == "bitmapist-server":
+        pytest.skip("bitmapist-server does not support multiple databases (db != 0)")
     mark_event("foo", 1, system="db1")
     assert 1 in YearEvents("foo", system="db1")

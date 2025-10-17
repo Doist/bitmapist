@@ -342,22 +342,70 @@ uv sync
 
 ## Testing
 
-To run our tests will need to ensure a local redis server is installed.
+### Quick Start with Docker (Recommended)
 
-You can use these environment variables to tell the tests about Redis:
+The easiest way to run tests locally is with Docker:
 
-- `BITMAPIST_REDIS_SERVER_PATH`: Path to the Redis server executable (defaults to the first one in the path or `/usr/bin/redis-server`)
-- `BITMAPIST_REDIS_PORT`: Port number for the Redis server (defaults to 6399)
+```bash
+# Start both backend servers
+docker compose up -d
 
-We use `pytest` to run unit tests, which you can run with:
+# Run tests
+uv run pytest
 
+# Stop servers when done
+docker compose down
+```
+
+This runs tests against both Redis and bitmapist-server backends automatically.
+
+### Alternative: Native Binaries
+
+To run tests with native binaries, you'll need at least one backend server installed:
+
+**Redis:**
+- Install `redis-server` using your package manager
+- Ensure it's in your `PATH`, or set `BITMAPIST_REDIS_SERVER_PATH`
+
+**Bitmapist-server:**
+- Download from the [releases page](https://github.com/Doist/bitmapist-server/releases)
+- Ensure it's in your PATH, or set `BITMAPIST_SERVER_PATH`
+
+Then run:
 ```bash
 uv run pytest
 ```
 
-> [!TIP]
-> You can also run tests against the [bitmapist-server](https://github.com/Doist/bitmapist-server) backend instead of Redis.
-> To do this, set the `BITMAPIST_REDIS_SERVER_PATH` variable to the path of the `bitmapist-server` executable.
+The test suite auto-detects available backends and runs accordingly:
+- **Docker containers running?** Uses them
+- **Native binaries available?** Starts them automatically
+- **Nothing available?** Shows error
+
+### Configuration
+
+#### Environment Variables
+
+Customize backend locations and ports if needed:
+
+```bash
+# Backend binary paths (optional - auto-detected from PATH by default)
+export BITMAPIST_REDIS_SERVER_PATH=/custom/path/to/redis-server
+export BITMAPIST_SERVER_PATH=/custom/path/to/bitmapist-server
+
+# Backend ports (optional - defaults shown)
+export BITMAPIST_REDIS_PORT=6399
+export BITMAPIST_SERVER_PORT=6400
+```
+
+#### Testing Specific Backends
+
+```bash
+# Test only Redis
+uv run pytest -k redis
+
+# Test only bitmapist-server
+uv run pytest -k bitmapist-server
+```
 
 ## Releasing new versions
 

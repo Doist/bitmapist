@@ -1,0 +1,14 @@
+# This file is used to start the Redis and bitmapist-server services for local
+# development and testing.
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${BITMAPIST_REDIS_PORT:-6399}:6379"
+    command: redis-server --port 6379
+
+  bitmapist-server:
+    image: ghcr.io/doist/bitmapist-server:v1.9.8
+    ports:
+      - "${BITMAPIST_SERVER_PORT:-6400}:6379"
