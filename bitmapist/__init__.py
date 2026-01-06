@@ -46,7 +46,8 @@ Answer if user 123 has been active this month::
 
 How many users have been active this week?::
 
-    print len(WeekEvents('active', now.year, now.isocalendar()[1]))
+    iso_year, iso_week, _ = now.isocalendar()
+    print len(WeekEvents('active', iso_year, iso_week))
 
 Perform bit operations. Which users that have been active last month are still active this month?::
 

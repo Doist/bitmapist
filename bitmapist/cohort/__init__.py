@@ -384,7 +384,8 @@ def _day_events_fn(key: str, date: date, system: str):
 
 def _weeks_events_fn(key: str, date: date, system: str):
     cls = WeekEvents
-    cls_args = (date.year, date.isocalendar()[1], system)
+    iso_year, iso_week, _ = date.isocalendar()
+    cls_args = (iso_year, iso_week, system)
     return _dispatch(key, cls, cls_args)
 
 

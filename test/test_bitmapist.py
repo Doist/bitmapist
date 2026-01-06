@@ -26,8 +26,9 @@ def test_mark_with_diff_days():
     assert 124 not in MonthEvents("active", now.year, now.month)
 
     # Week
-    assert 123 in WeekEvents("active", now.year, now.isocalendar()[1])
-    assert 124 not in WeekEvents("active", now.year, now.isocalendar()[1])
+    iso_year, iso_week, _ = now.isocalendar()
+    assert 123 in WeekEvents("active", iso_year, iso_week)
+    assert 124 not in WeekEvents("active", iso_year, iso_week)
 
     # Day
     assert 123 in DayEvents("active", now.year, now.month, now.day)
