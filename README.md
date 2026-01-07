@@ -78,7 +78,8 @@ assert MonthEvents('active', now.year, now.month).has_events_marked() == True
 How many users have been active this week?:
 
 ```python
-print(len(WeekEvents('active', now.year, now.isocalendar()[1])))
+iso_year, iso_week, _ = now.isocalendar()
+print(len(WeekEvents('active', iso_year, iso_week)))
 ```
 
 Iterate over all users active this week:
@@ -111,7 +112,8 @@ MonthEvents('active').from_date(now) == MonthEvents('active', now.year, now.mont
 Get the list of these users (user ids):
 
 ```python
-print(list(WeekEvents('active', now.year, now.isocalendar()[1])))
+iso_year, iso_week, _ = now.isocalendar()
+print(list(WeekEvents('active', iso_year, iso_week)))
 ```
 
 There are special methods `prev` and `next` returning "sibling" events and
