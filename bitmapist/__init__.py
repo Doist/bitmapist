@@ -87,7 +87,7 @@ import calendar
 import threading
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any, Optional, Self, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import redis
 
@@ -471,7 +471,7 @@ class GenericPeriodEvents(
         # redis_key will be set by subclasses
 
     @abc.abstractmethod
-    def delta(self, value: int) -> Self:
+    def delta(self, value: int):
         """Return a new instance with the period offset by value."""
         ...
 
@@ -485,11 +485,11 @@ class GenericPeriodEvents(
         """Return the end datetime of this period."""
         ...
 
-    def next(self) -> Self:
+    def next(self):
         """Next object in a datetime line"""
         return self.delta(value=1)
 
-    def prev(self) -> Self:
+    def prev(self):
         """Prev object in a datetime line"""
         return self.delta(value=-1)
 
