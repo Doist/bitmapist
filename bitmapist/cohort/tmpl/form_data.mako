@@ -1,3 +1,6 @@
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 <style>
 .cohort_form dd {
     display: inline-block;
@@ -6,6 +9,14 @@
 
 .cohort_form select {
     max-width: 150px;
+}
+
+/* The event selects are enhanced with Tom Select, which renders its own
+   searchable control. Give that control a usable width. */
+.cohort_form .ts-wrapper {
+    display: inline-block;
+    min-width: 200px;
+    vertical-align: middle;
 }
 </style>
 
@@ -83,8 +94,20 @@
     </dl>
 </form>
 
+<script>
+    // Turn the event dropdowns into searchable selects. With hundreds of
+    // bitmapist events, scrolling a native <select> is painful; Tom Select
+    // adds a type-to-filter search box while still submitting the same value.
+    document.querySelectorAll('.cohort-event-select').forEach(function (el) {
+        new TomSelect(el, {
+            maxOptions: null,   // never truncate the filtered list
+            searchField: ['text', 'value'],
+        });
+    });
+</script>
+
 <%def name="render_options(select_name, selections, current_selection)">
-    <select name="${ select_name }">
+    <select name="${ select_name }" class="cohort-event-select">
         %for option in selections:
             %if option == '---':
                 <option value="" disabled="disabled">----</option>
