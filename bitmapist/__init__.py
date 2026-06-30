@@ -93,6 +93,7 @@ import redis
 
 if TYPE_CHECKING:
     from redis.client import Pipeline, Redis
+    from typing_extensions import Self
 
 local_thread = threading.local()
 
@@ -471,7 +472,7 @@ class GenericPeriodEvents(
         # redis_key will be set by subclasses
 
     @abc.abstractmethod
-    def delta(self, value: int):
+    def delta(self, value: int) -> Self:
         """Return a new instance with the period offset by value."""
         ...
 
@@ -485,11 +486,11 @@ class GenericPeriodEvents(
         """Return the end datetime of this period."""
         ...
 
-    def next(self):
+    def next(self) -> Self:
         """Next object in a datetime line"""
         return self.delta(value=1)
 
-    def prev(self):
+    def prev(self) -> Self:
         """Prev object in a datetime line"""
         return self.delta(value=-1)
 
