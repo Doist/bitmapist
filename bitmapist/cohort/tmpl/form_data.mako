@@ -1,9 +1,17 @@
 <%doc>
     Tom Select 2.3.1 is vendored and inlined (see bitmapist/cohort/tmpl/vendor/)
     rather than loaded from a CDN, so the cohort form makes no third-party
-    network calls at runtime and works in offline / CSP-restricted deployments.
+    network calls at runtime and works offline.
+
+    Emitting the library is gated on `include_assets` so a caller that renders
+    more than one cohort form on a page (or already loads Tom Select itself)
+    can suppress the duplicated CSS/JS by passing include_assets=False on the
+    later forms. The small initializer below is always emitted and no-ops if
+    the library isn't present.
 </%doc>
+%if include_assets:
 <style>${ tom_select_css | n }</style>
+%endif
 
 <style>
 .cohort_form dd {
@@ -102,7 +110,9 @@
     The library is inlined here, after the form markup, so the browser can
     render the form before parsing/executing ~50KB of JS.
 </%doc>
+%if include_assets:
 <script>${ tom_select_js | n }</script>
+%endif
 
 <script>
     // Turn the event dropdowns into searchable selects. With hundreds of

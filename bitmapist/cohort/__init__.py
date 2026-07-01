@@ -82,10 +82,11 @@ from bitmapist import (
 # --- HTML rendering
 
 # Tom Select is vendored (not loaded from a CDN) so the cohort form makes no
-# third-party network calls at runtime and works in offline / CSP-restricted
-# deployments. The assets are inlined into the fragment because the library has
-# no static-serving mechanism of its own -- consumers just embed the string
-# returned by render_html_form().
+# third-party network calls at runtime and works offline. The assets are inlined
+# into the fragment because the library has no static-serving mechanism of its
+# own -- consumers just embed the string returned by render_html_form(). Note
+# that inline tags still require the host's CSP to permit inline script/style
+# (or that callers pass include_assets=False and load Tom Select themselves).
 _TOM_SELECT_CSS = "tmpl/vendor/tom-select-2.3.1.default.min.css"
 _TOM_SELECT_JS = "tmpl/vendor/tom-select-2.3.1.complete.min.js"
 
@@ -115,6 +116,7 @@ def render_html_form(
     num_results: int = 31,
     num_of_rows: int = 12,
     start_date: Optional[str] = None,
+    include_assets: bool = True,
 ):
     """
     Render a HTML form that can be used to query the data in bitmapist.
@@ -129,6 +131,11 @@ def render_html_form(
     :param :select1b What is the current selected filter (extra, optional)
     :param :select2 What is the current selected filter (second)
     :param :select2b What is the current selected filter (extra, optional)
+    :param :include_assets Whether to inline the vendored Tom Select CSS/JS into
+        the fragment. Defaults to `True`. Set to `False` when rendering more than
+        one form on a page, or when the host page already loads Tom Select, to
+        avoid shipping the library more than once. The searchable dropdowns still
+        initialize as long as Tom Select is available on the page.
 
     """
     # mandatory
@@ -159,8 +166,11 @@ def render_html_form(
             num_results=int(num_results),
             num_of_rows=int(num_of_rows),
             start_date=start_date,
-            tom_select_css=_read_vendor_asset(_TOM_SELECT_CSS),
-            tom_select_js=_read_vendor_asset(_TOM_SELECT_JS),
+            include_assets=include_assets,
+            tom_select_css=_read_vendor_asset(_TOM_SELECT_CSS)
+            if include_assets
+            else "",
+            tom_select_js=_read_vendor_asset(_TOM_SELECT_JS) if include_assets else "",
         )
     )
 
