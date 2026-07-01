@@ -81,6 +81,24 @@ from bitmapist import (
 
 # --- HTML rendering
 
+# Tom Select is vendored (not loaded from a CDN) so the cohort form makes no
+# third-party network calls at runtime and works in offline / CSP-restricted
+# deployments. The assets are inlined into the fragment because the library has
+# no static-serving mechanism of its own -- consumers just embed the string
+# returned by render_html_form().
+_TOM_SELECT_CSS = "tmpl/vendor/tom-select-2.3.1.default.min.css"
+_TOM_SELECT_JS = "tmpl/vendor/tom-select-2.3.1.complete.min.js"
+
+_VENDOR_CACHE: dict[str, str] = {}
+
+
+def _read_vendor_asset(relative_path: str) -> str:
+    if relative_path not in _VENDOR_CACHE:
+        file_path = path.join(path.dirname(path.abspath(__file__)), relative_path)
+        with open(file_path, encoding="utf-8") as f:
+            _VENDOR_CACHE[relative_path] = f.read()
+    return _VENDOR_CACHE[relative_path]
+
 
 def render_html_form(
     action_url,
@@ -141,6 +159,8 @@ def render_html_form(
             num_results=int(num_results),
             num_of_rows=int(num_of_rows),
             start_date=start_date,
+            tom_select_css=_read_vendor_asset(_TOM_SELECT_CSS),
+            tom_select_js=_read_vendor_asset(_TOM_SELECT_JS),
         )
     )
 

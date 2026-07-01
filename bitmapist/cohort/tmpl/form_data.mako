@@ -1,7 +1,9 @@
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet"
-      integrity="sha384-86bgzEpZNdMv4V0h2BgSxQUadlX29O0I89TbSGZ4gFkGtpN8U+KAGcuDbqMdbl/M" crossorigin="anonymous" />
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"
-        integrity="sha384-cnROoUgVILyibe3J0zhzWoJ9p2WmdnK7j/BOTSWqVDbC1pVw2d+i6Q/1ESKJKCYf" crossorigin="anonymous"></script>
+<%doc>
+    Tom Select 2.3.1 is vendored and inlined (see bitmapist/cohort/tmpl/vendor/)
+    rather than loaded from a CDN, so the cohort form makes no third-party
+    network calls at runtime and works in offline / CSP-restricted deployments.
+</%doc>
+<style>${ tom_select_css | n }</style>
 
 <style>
 .cohort_form dd {
@@ -96,22 +98,34 @@
     </dl>
 </form>
 
+<%doc>
+    The library is inlined here, after the form markup, so the browser can
+    render the form before parsing/executing ~50KB of JS.
+</%doc>
+<script>${ tom_select_js | n }</script>
+
 <script>
     // Turn the event dropdowns into searchable selects. With hundreds of
     // bitmapist events, scrolling a native <select> is painful; Tom Select
     // adds a type-to-filter search box while still submitting the same value.
-    document.querySelectorAll('.cohort_form .cohort-event-select').forEach(function (el) {
-        // The form fragment may be rendered more than once on a page, so this
-        // initializer can run again over selects that are already enhanced.
-        // Tom Select throws if re-initialized, so skip anything already done.
-        if (el.tomselect) {
-            return;
-        }
-        new TomSelect(el, {
-            maxOptions: null,   // never truncate the filtered list
-            searchField: ['text', 'value'],
+    if (typeof TomSelect === 'undefined') {
+        // Library failed to load for some reason; leave the native <select>s
+        // in place rather than throwing.
+        console.warn('Tom Select unavailable; cohort event dropdowns not enhanced.');
+    } else {
+        document.querySelectorAll('.cohort_form .cohort-event-select').forEach(function (el) {
+            // The form fragment may be rendered more than once on a page, so
+            // this initializer can run again over selects that are already
+            // enhanced. Tom Select throws if re-initialized, so skip those.
+            if (el.tomselect) {
+                return;
+            }
+            new TomSelect(el, {
+                maxOptions: null,   // never truncate the filtered list
+                searchField: ['text', 'value'],
+            });
         });
-    });
+    }
 </script>
 
 <%def name="render_options(select_name, selections, current_selection)">
