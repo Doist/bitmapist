@@ -1,3 +1,18 @@
+<%doc>
+    Tom Select 2.3.1 is vendored and inlined (see bitmapist/cohort/tmpl/vendor/)
+    rather than loaded from a CDN, so the cohort form makes no third-party
+    network calls at runtime and works offline.
+
+    Emitting the library is gated on `include_assets` so a caller that renders
+    more than one cohort form on a page (or already loads Tom Select itself)
+    can suppress the duplicated CSS/JS by passing include_assets=False on the
+    later forms. The small initializer below is always emitted and no-ops if
+    the library isn't present.
+</%doc>
+%if include_assets:
+<style>${ tom_select_css | n }</style>
+%endif
+
 <style>
 .cohort_form dd {
     display: inline-block;
@@ -6,6 +21,14 @@
 
 .cohort_form select {
     max-width: 150px;
+}
+
+/* The event selects are enhanced with Tom Select, which renders its own
+   searchable control. Give that control a usable width. */
+.cohort_form .ts-wrapper {
+    display: inline-block;
+    min-width: 200px;
+    vertical-align: middle;
 }
 </style>
 
@@ -83,8 +106,40 @@
     </dl>
 </form>
 
+<%doc>
+    The library is inlined here, after the form markup, so the browser can
+    render the form before parsing/executing ~50KB of JS.
+</%doc>
+%if include_assets:
+<script>${ tom_select_js | n }</script>
+%endif
+
+<script>
+    // Turn the event dropdowns into searchable selects. With hundreds of
+    // bitmapist events, scrolling a native <select> is painful; Tom Select
+    // adds a type-to-filter search box while still submitting the same value.
+    if (typeof TomSelect === 'undefined') {
+        // Library failed to load for some reason; leave the native <select>s
+        // in place rather than throwing.
+        console.warn('Tom Select unavailable; cohort event dropdowns not enhanced.');
+    } else {
+        document.querySelectorAll('.cohort_form .cohort-event-select').forEach(function (el) {
+            // The form fragment may be rendered more than once on a page, so
+            // this initializer can run again over selects that are already
+            // enhanced. Tom Select throws if re-initialized, so skip those.
+            if (el.tomselect) {
+                return;
+            }
+            new TomSelect(el, {
+                maxOptions: null,   // never truncate the filtered list
+                searchField: ['text', 'value'],
+            });
+        });
+    }
+</script>
+
 <%def name="render_options(select_name, selections, current_selection)">
-    <select name="${ select_name }">
+    <select name="${ select_name }" class="cohort-event-select">
         %for option in selections:
             %if option == '---':
                 <option value="" disabled="disabled">----</option>

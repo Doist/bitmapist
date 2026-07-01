@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 
 from bitmapist import mark_event
-from bitmapist.cohort import _weeks_events_fn, get_dates_data
+from bitmapist.cohort import _weeks_events_fn, get_dates_data, render_html_form
 
 
 @pytest.fixture
@@ -88,3 +88,34 @@ def test_weeks_events_fn_iso_year_boundary():
 
     # Both dates should produce the same week event
     assert event.redis_key == event2.redis_key
+
+
+def test_render_html_form_inlines_vendored_assets():
+    """The vendored Tom Select library ships in the package and is inlined.
+
+    Guards against a silent packaging/integration regression: if the vendored
+    assets are dropped from the wheel, the on-disk path resolution breaks, or
+    the template variables stop lining up, this fails instead of the public
+    API raising at call time.
+    """
+    html = render_html_form(action_url="/", selections1=[("Active", "active")])
+    assert "Tom Select v2.3.1" in html  # vendored library JS inlined
+    assert "cohort-event-select" in html  # event selects tagged for enhancement
+    assert "new TomSelect" in html  # initializer present
+
+
+def test_render_html_form_can_suppress_assets():
+    """include_assets=False omits the bundled library so it isn't shipped twice.
+
+    Lets a caller rendering more than one cohort form on a page (or a host that
+    already loads Tom Select) avoid duplicating the library, while the form and
+    its initializer are still emitted.
+    """
+    html = render_html_form(
+        action_url="/",
+        selections1=[("Active", "active")],
+        include_assets=False,
+    )
+    assert "Tom Select v2.3.1" not in html  # library not re-emitted
+    assert "cohort-event-select" in html  # form still rendered
+    assert "new TomSelect" in html  # initializer still present (uses page-level lib)
