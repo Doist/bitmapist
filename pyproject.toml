@@ -47,13 +47,16 @@ dev = [
     "tox",
     "mypy",
     "ruff>=0.12.0",
+    "reuse[charset-normalizer]==6.2.0 ; python_full_version >= '3.10'",
 ]
 
 [tool.hatch.build.targets.sdist]
 include = [
     "bitmapist",
     "AUTHORS",
+    "LICENSES",
     "README.md",
+    "REUSE.toml",
     "static/bitmapist.png",
     "static/bitmapist.svg",
 ]
@@ -63,7 +66,9 @@ exclude = ["tests/"]
 include = [
     "bitmapist",
     "AUTHORS",
+    "LICENSES",
     "README.md",
+    "REUSE.toml",
     "static/bitmapist.png",
     "static/bitmapist.svg",
 ]

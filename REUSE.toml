@@ -1,0 +1,38 @@
+# License texts are sourced from their authoritative sources:
+# https://www.apache.org/licenses/LICENSE-2.0.txt
+# https://raw.githubusercontent.com/spdx/license-list-data/421fbabbe80c94c58c12316af1bc6a2dca2362bc/text/BSD-3-Clause.txt
+# Keep one canonical license text per SPDX ID in LICENSES/. Add a path-specific
+# override below for every third-party component, even when it uses BSD-3-Clause.
+version = 1
+
+# First-party files.
+[[annotations]]
+path = [
+    ".github/**",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    "AUTHORS",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "README.md",
+    "bitmapist/**",
+    "docker-compose.yml",
+    "pyproject.toml",
+    "scripts/**",
+    "static/**",
+    "test/**",
+    "uv.lock",
+]
+SPDX-FileCopyrightText = "2012 Doist Ltd. and contributors"
+SPDX-License-Identifier = "BSD-3-Clause"
+
+# Third-party component overrides. Add one annotation per component so its
+# copyright and license remain independent of other files using the same SPDX ID.
+[[annotations]]
+path = [
+    "bitmapist/cohort/tmpl/vendor/tom-select-2.3.1.complete.min.js",
+    "bitmapist/cohort/tmpl/vendor/tom-select-2.3.1.default.min.css",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2013-2015 Brian Reavis"
+SPDX-License-Identifier = "Apache-2.0"
