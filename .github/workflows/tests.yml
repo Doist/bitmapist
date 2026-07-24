@@ -7,6 +7,31 @@ on:
   pull_request:
 
 jobs:
+  license-compliance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Validate REUSE metadata
+        run: uv run --locked reuse lint
+
+      - name: Build distributions
+        run: uv build --out-dir dist
+
+      - name: Verify distributed license files
+        run: uv run --locked python scripts/verify_distribution_licenses.py dist/*
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 60
