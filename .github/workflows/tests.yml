@@ -39,7 +39,7 @@ jobs:
         if: matrix.backend == 'bitmapist-server'
         id: bitmapist-version
         run: |
-          VERSION=$(curl -s https://api.github.com/repos/Doist/bitmapist-server/releases/latest | jq -r .tag_name)
+          VERSION=$(curl -s https://api.github.com/repos/todoist/bitmapist-server/releases/latest | jq -r .tag_name)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Cache bitmapist-server
@@ -53,7 +53,7 @@ jobs:
       - name: Download bitmapist-server
         if: matrix.backend == 'bitmapist-server' && steps.cache-bitmapist.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/Doist/bitmapist-server/releases/latest/download/bitmapist-server-linux-amd64.tar.gz
+          wget https://github.com/todoist/bitmapist-server/releases/latest/download/bitmapist-server-linux-amd64.tar.gz
           tar -xzf bitmapist-server-linux-amd64.tar.gz
           chmod +x bitmapist-server
           mv bitmapist-server ~/bitmapist-server

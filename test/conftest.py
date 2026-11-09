@@ -70,7 +70,7 @@ BACKEND_CONFIGS = {
         path_env="BITMAPIST_SERVER_PATH",
         binary_name="bitmapist-server",
         fallback_path=None,
-        install_hint="Download from https://github.com/Doist/bitmapist-server/releases",
+        install_hint="Download from https://github.com/todoist/bitmapist-server/releases",
         start_args=lambda port, temp_dir: [
             "-addr",
             f"0.0.0.0:{port}",

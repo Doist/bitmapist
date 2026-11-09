@@ -37,7 +37,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/Doist/bitmapist"
+Repository = "https://github.com/todoist/bitmapist"
 
 [dependency-groups]
 dev = [
