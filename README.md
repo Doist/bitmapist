@@ -1,4 +1,4 @@
-![bitmapist](https://raw.githubusercontent.com/Doist/bitmapist/master/static/bitmapist.png "bitmapist")
+![bitmapist](https://raw.githubusercontent.com/todoist/bitmapist/master/static/bitmapist.png "bitmapist")
 
 [![Build Status](https://travis-ci.org/Doist/bitmapist.svg?branch=master)](https://travis-ci.org/Doist/bitmapist)
 
@@ -9,7 +9,7 @@ Bitmapist makes it possible to implement real-time, highly scalable analytics. T
 Leveraging Redis bitmaps, you can store events for millions of users using a very little amount of memory (megabytes).
 
 > [!TIP]
-> Instead of Redis as a backing store, consider using [bitmapist-server](https://github.com/Doist/bitmapist-server).
+> Instead of Redis as a backing store, consider using [bitmapist-server](https://github.com/todoist/bitmapist-server).
 >
 > It is our custom data store that exposes a (partial) Redis-compatible API, fully compatible with Bitmapist. It is 443x more memory efficient for this particular use case, improving scalability and cost-effectiveness.
 
@@ -317,7 +317,7 @@ print(html_data)
 
 This will render something similar to this:
 
-![bitmapist cohort screenshot](https://raw.githubusercontent.com/Doist/bitmapist/master/static/cohort_screenshot.png "bitmapist cohort screenshot")
+![bitmapist cohort screenshot](https://raw.githubusercontent.com/todoist/bitmapist/master/static/cohort_screenshot.png "bitmapist cohort screenshot")
 
 ## References
 
@@ -370,7 +370,7 @@ To run tests with native binaries, you'll need at least one backend server insta
 - Ensure it's in your `PATH`, or set `BITMAPIST_REDIS_SERVER_PATH`
 
 **Bitmapist-server:**
-- Download from the [releases page](https://github.com/Doist/bitmapist-server/releases)
+- Download from the [releases page](https://github.com/todoist/bitmapist-server/releases)
 - Ensure it's in your PATH, or set `BITMAPIST_SERVER_PATH`
 
 Then run:

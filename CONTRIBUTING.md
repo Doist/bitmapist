@@ -2,7 +2,7 @@
 
 Thanks for helping us make Bitmapist work better.
 
-Please feel free to [report any issue](https://github.com/Doist/bitmapist/issues/new/choose) you may have.
+Please feel free to [report any issue](https://github.com/todoist/bitmapist/issues/new/choose) you may have.
 
 **Working on your first Pull Request?** You can learn how from this _free_
 series [How to Contribute to an Open Source Project on GitHub][egghead]
